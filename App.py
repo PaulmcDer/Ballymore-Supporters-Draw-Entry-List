@@ -60,16 +60,29 @@ if "phone" not in st.session_state:
 if "ticket" not in st.session_state:
     st.session_state.ticket = ""
 
+if "seller" not in st.session_state:
+    st.session_state.seller = ""
+
+if "comments" not in st.session_state:
+    st.session_state.comments = ""
+
+if "paid" not in st.session_state:
+    st.session_state.paid = "Paid"
+
 if "show_success" not in st.session_state:
     st.session_state.show_success = False
 
-if st.session_state.show_success:
+if "reset_form" not in st.session_state:
+    st.session_state.reset_form = False
 
-    st.success(
-        "✅ Entry submitted successfully. You can now enter another ticket if required."
-    )
-
-    st.session_state.show_success = False
+if st.session_state.reset_form:
+    st.session_state.name = ""
+    st.session_state.phone = ""
+    st.session_state.ticket = ""
+    st.session_state.seller = ""
+    st.session_state.comments = ""
+    st.session_state.paid = "Paid"   # or whatever default you want
+    st.session_state.reset_form = False 
 
 # --------------------------------------------------
 # FORM
@@ -77,7 +90,7 @@ if st.session_state.show_success:
 
 with st.form(
     "draw_entry_form",
-    clear_on_submit=True
+    clear_on_submit=False
 
     ):
 
@@ -87,7 +100,8 @@ with st.form(
     )
 
     seller = st.text_input(
-        "Seller Name (Required)"
+        "Seller Name (Required)",
+        key="seller"
     )
 
     phone = st.text_input(
@@ -104,18 +118,28 @@ with st.form(
         "Payment Status",
         [
             "Paid",
-            "Not Paid"
-        ]
+            "Not Paid",
+        ],
+        key= "paid"
     )
 
     comments = st.text_area(
         "Comments / Notes (Optional)",
-        max_chars=200
+        max_chars=200,
+        key= "comments"
     )
 
     submit = st.form_submit_button(
         "Submit Entry"
     )
+    
+if st.session_state.show_success:
+
+    st.success(
+        "✅ Entry submitted successfully. You can now enter another ticket if required."
+    )
+
+    st.session_state.show_success = False
 
 # --------------------------------------------------
 # PROCESS ENTRY
@@ -160,11 +184,6 @@ if submit:
         if not ticket.upper().startswith("T"):
             ticket = f"T{ticket}"
 
-        existing_tickets = [
-            str(x).upper()
-            for x in sheet.col_values(3)[1:]
-        ]
-
         existing_phones = [
             str(x).strip().replace(" ", "")
             for x in sheet.col_values(4)[1:]
@@ -172,13 +191,7 @@ if submit:
 
         phone_check = phone
 
-        if ticket.upper() in existing_tickets:
-
-            st.error(
-                f"{ticket} already exists."
-            )
-
-        elif phone_check and phone_check in existing_phones:
+        if phone_check and phone_check in existing_phones:
 
             st.error(
                 f"{phone} already exists."
@@ -201,6 +214,7 @@ if submit:
                     comments
                 ]
             )
+            st.session_state.reset_form = True
             st.session_state.show_success = True
             st.rerun()
 
