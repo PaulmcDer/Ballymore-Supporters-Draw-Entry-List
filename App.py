@@ -67,7 +67,7 @@ if "comments" not in st.session_state:
     st.session_state.comments = ""
 
 if "paid" not in st.session_state:
-    st.session_state.paid = "Paid"
+    st.session_state.paid = "Not Paid"
 
 if "show_success" not in st.session_state:
     st.session_state.show_success = False
@@ -81,7 +81,7 @@ if st.session_state.reset_form:
     st.session_state.ticket = ""
     st.session_state.seller = ""
     st.session_state.comments = ""
-    st.session_state.paid = "Paid"   # or whatever default you want
+    st.session_state.paid = "Not Paid"   # or whatever default you want
     st.session_state.reset_form = False 
 
 # --------------------------------------------------
@@ -115,10 +115,12 @@ with st.form(
     )
 
     paid = st.selectbox(
-        "Payment Status",
+        "Payment Method",
         [
-            "Paid",
             "Not Paid",
+            "Paid by revolut",
+            "Paid by BOI",
+            "Paid by Cash/Cheque",
         ],
         key= "paid"
     )
@@ -132,13 +134,17 @@ with st.form(
     submit = st.form_submit_button(
         "Submit Entry"
     )
-    
+
+
+#--------------------------------------------------
+# New Section 
+#--------------------------------------------------
+
 if st.session_state.show_success:
 
     st.success(
-        "✅ Entry submitted successfully. You can now enter another ticket if required."
+            "✅ Entry submitted successfully. You can now enter another ticket if required."
     )
-
     st.session_state.show_success = False
 
 # --------------------------------------------------
@@ -146,6 +152,8 @@ if st.session_state.show_success:
 # --------------------------------------------------
 
 if submit:
+
+    st.session_state.show_success = False
 
     name = name.strip()
     phone = phone.strip().replace(" ", "")
@@ -202,7 +210,7 @@ if submit:
             timestamp = datetime.now().strftime(
                 "%d/%m/%Y %H:%M"
             )
-
+            
             sheet.append_row(
                 [
                     name,
@@ -216,6 +224,7 @@ if submit:
             )
             st.session_state.reset_form = True
             st.session_state.show_success = True
+            
             st.rerun()
 
 # --------------------------------------------------
