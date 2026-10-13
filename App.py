@@ -37,12 +37,12 @@ sheet = client.open_by_key(SHEET_ID).sheet1
 # PAGE
 # --------------------------------------------------
 
-col1, col2, col3 = st.columns([1, 1, 1])
+col1, col2, col3 = st.columns([2, 1.5, 2])
 
 with col2:
     st.image(
         "logo.png",
-        width=160
+        width=140
     )
 
 st.title("Supporters Monthly Draw Tickets")
@@ -226,6 +226,92 @@ if submit:
             st.session_state.show_success = True
             
             st.rerun()
+# --------------------------------------------------
+# VIEW ENTRIES
+# --------------------------------------------------
+
+st.markdown("---")
+st.subheader("View Submitted Entries")
+
+search_seller = st.text_input(
+    "Enter Seller Name",
+    key="search_seller"
+)
+
+if st.button("View My Entries"):
+
+    if not search_seller.strip():
+        st.warning("Please enter a seller name.")
+    else:
+
+        records = sheet.get_all_records()
+
+        results = []
+
+        for row in records:
+
+            if search_seller.strip().lower() in str(row["Seller Name"]).strip().lower():
+
+                results.append(
+                    {
+                        "Seller Name": row["Seller Name"],
+                        "Ticket Holder": row["Name"],
+                        "Ticket Number": row["Ticket Number"]
+                    }
+                )
+
+        if results:
+
+            st.metric("Total Entries", len(results))
+            
+            st.dataframe(
+                results,
+                width="stretch"
+            )
+        else:
+            st.info("No entries found for that seller.")
+
+# --------------------------------------------------
+# ADMIN VIEW
+# --------------------------------------------------
+
+st.markdown("---")
+st.subheader("Admin Access")
+
+admin_pin = st.text_input(
+    "Admin PIN",
+    type="password"
+)
+
+if st.button("View Full Table"):
+
+    if admin_pin == st.secrets["ADMIN_PIN"]:
+
+        records = sheet.get_all_records()
+        records.reverse()
+
+        results = []
+
+        for row in records:
+
+            results.append(
+                {
+                    "Seller Name": row["Seller Name"],
+                    "Ticket Holder": row["Name"],
+                    "Ticket Number": row["Ticket Number"],
+                    "Paid": row["Paid"]
+                }
+            )
+
+        st.success(f"{len(results)} entries found.")
+
+        st.dataframe(
+            results,
+            width="stretch"
+        )
+
+    else:
+        st.error("Invalid PIN.")
 
 # --------------------------------------------------
 # FOOTER
