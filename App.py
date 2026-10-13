@@ -31,7 +31,7 @@ creds = Credentials.from_service_account_info(
 
 client = gspread.authorize(creds)
 
-sheet = client.open_by_key(SHEET_ID).sheet1
+sheet = client.open_by_key(SHEET_ID).worksheet("Ticket_Entries")
 
 # --------------------------------------------------
 # PAGE
