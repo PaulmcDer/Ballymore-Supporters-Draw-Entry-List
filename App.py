@@ -1,5 +1,6 @@
 import streamlit as st
 import gspread
+import pandas as pd
 from google.oauth2.service_account import Credentials
 from datetime import datetime
 
@@ -34,285 +35,346 @@ client = gspread.authorize(creds)
 sheet = client.open_by_key(SHEET_ID).worksheet("Ticket_Entries")
 
 # --------------------------------------------------
+# Spilt for Tabs
+# --------------------------------------------------
+
+tab1, tab2 = st.tabs(
+    [
+        "🎟️ Ticket Entry",
+        "📋 Last Year's Sales"
+    ]
+)
+
+with tab1:
+
+# --------------------------------------------------
 # PAGE
 # --------------------------------------------------
 
-col1, col2, col3 = st.columns([2, 1.5, 2])
+    col1, col2, col3 = st.columns([2, 1.5, 2])
 
-with col2:
-    st.image(
-        "logo.png",
-        width=140
-    )
-
-st.title("Supporters Monthly Draw Tickets")
-
-st.write(
-    "Please enter the ticket holder's details below and click Submit Entry when complete."
-)
-
-if "name" not in st.session_state:
-    st.session_state.name = ""
-
-if "phone" not in st.session_state:
-    st.session_state.phone = ""
-
-if "ticket" not in st.session_state:
-    st.session_state.ticket = ""
-
-if "seller" not in st.session_state:
-    st.session_state.seller = ""
-
-if "comments" not in st.session_state:
-    st.session_state.comments = ""
-
-if "paid" not in st.session_state:
-    st.session_state.paid = "Not Paid"
-
-if "show_success" not in st.session_state:
-    st.session_state.show_success = False
-
-if "reset_form" not in st.session_state:
-    st.session_state.reset_form = False
-
-if st.session_state.reset_form:
-    st.session_state.name = ""
-    st.session_state.phone = ""
-    st.session_state.ticket = ""
-    st.session_state.seller = ""
-    st.session_state.comments = ""
-    st.session_state.paid = "Not Paid"   # or whatever default you want
-    st.session_state.reset_form = False 
-
-# --------------------------------------------------
-# FORM
-# --------------------------------------------------
-
-with st.form(
-    "draw_entry_form",
-    clear_on_submit=False
-
-    ):
-
-    name = st.text_input(
-        "Name",
-        key="name"
-    )
-
-    seller = st.text_input(
-        "Seller Name (Required)",
-        key="seller"
-    )
-
-    phone = st.text_input(
-        "Ticket Holder Contact Number",
-        key="phone"
-    )
-
-    ticket = st.text_input(
-        "Ticket Number",
-        key="ticket"
-    )
-
-    paid = st.selectbox(
-        "Payment Method",
-        [
-            "Not Paid",
-            "Paid by revolut",
-            "Paid by BOI",
-            "Paid by Cash/Cheque",
-        ],
-        key= "paid"
-    )
-
-    comments = st.text_area(
-        "Comments / Notes (Optional)",
-        max_chars=200,
-        key= "comments"
-    )
-
-    submit = st.form_submit_button(
-        "Submit Entry"
-    )
-
-
-#--------------------------------------------------
-# New Section 
-#--------------------------------------------------
-
-if st.session_state.show_success:
-
-    st.success(
-            "✅ Entry submitted successfully. You can now enter another ticket if required."
-    )
-    st.session_state.show_success = False
-
-# --------------------------------------------------
-# PROCESS ENTRY
-# --------------------------------------------------
-
-if submit:
-
-    st.session_state.show_success = False
-
-    name = name.strip()
-    phone = phone.strip().replace(" ", "")
-    ticket = ticket.strip()
-
-    if not name:
-
-        st.error(
-            "Please enter a name."
+    with col2:
+        st.image(
+            "logo.png",
+            width=140
         )
 
-    elif phone and not phone.isdigit():
+    st.title("Supporters Monthly Draw Tickets")
 
-        st.error(
-            "Phone number must contain numbers only."
+    st.write(
+        "Please enter the ticket holder's details below and click Submit Entry when complete."
+    )
+
+    if "name" not in st.session_state:
+        st.session_state.name = ""
+
+    if "phone" not in st.session_state:
+        st.session_state.phone = ""
+
+    if "ticket" not in st.session_state:
+        st.session_state.ticket = ""
+
+    if "seller" not in st.session_state:
+        st.session_state.seller = ""
+
+    if "comments" not in st.session_state:
+        st.session_state.comments = ""
+
+    if "paid" not in st.session_state:
+        st.session_state.paid = "Not Paid"
+
+    if "show_success" not in st.session_state:
+        st.session_state.show_success = False
+
+    if "reset_form" not in st.session_state:
+        st.session_state.reset_form = False
+
+    if st.session_state.reset_form:
+        st.session_state.name = ""
+        st.session_state.phone = ""
+        st.session_state.ticket = ""
+        st.session_state.seller = ""
+        st.session_state.comments = ""
+        st.session_state.paid = "Not Paid"   # or whatever default you want
+        st.session_state.reset_form = False 
+
+    # --------------------------------------------------
+    # FORM
+    # --------------------------------------------------
+
+    with st.form(
+        "draw_entry_form",
+        clear_on_submit=False
+
+        ):
+
+        name = st.text_input(
+            "Name",
+            key="name"
         )
-    elif not seller:
-        st.error(
-            "Please enter a seller name"
+
+        seller = st.text_input(
+            "Seller Name (Required)",
+            key="seller"
         )
 
-    elif phone and len(phone) != 10:
-
-        st.error(
-            "Phone number must be 10 digits."
+        phone = st.text_input(
+            "Ticket Holder Contact Number",
+            key="phone"
         )
 
-    elif not ticket:
-
-        st.error(
-            "Please enter a ticket number."
+        ticket = st.text_input(
+            "Ticket Number",
+            key="ticket"
         )
 
-    else:
+        paid = st.selectbox(
+            "Payment Method",
+            [
+                "Not Paid",
+                "Paid by revolut",
+                "Paid by BOI",
+                "Paid by Cash/Cheque",
+            ],
+            key= "paid"
+        )
 
-        if not ticket.upper().startswith("T"):
-            ticket = f"T{ticket}"
+        comments = st.text_area(
+            "Comments / Notes (Optional)",
+            max_chars=200,
+            key= "comments"
+        )
 
-        existing_phones = [
-            str(x).strip().replace(" ", "")
-            for x in sheet.col_values(4)[1:]
-        ]
+        submit = st.form_submit_button(
+            "Submit Entry"
+        )
 
-        phone_check = phone
 
-        if phone_check and phone_check in existing_phones:
+    #--------------------------------------------------
+    # New Section 
+    #--------------------------------------------------
+
+    if st.session_state.show_success:
+
+        st.success(
+                "✅ Entry submitted successfully. You can now enter another ticket if required."
+        )
+        st.session_state.show_success = False
+
+    # --------------------------------------------------
+    # PROCESS ENTRY
+    # --------------------------------------------------
+
+    if submit:
+
+        st.session_state.show_success = False
+
+        name = name.strip()
+        phone = phone.strip().replace(" ", "")
+        ticket = ticket.strip()
+
+        if not name:
 
             st.error(
-                f"{phone} already exists."
+                "Please enter a name."
+            )
+
+        elif phone and not phone.isdigit():
+
+            st.error(
+                "Phone number must contain numbers only."
+            )
+        elif not seller:
+            st.error(
+                "Please enter a seller name"
+            )
+
+        elif phone and len(phone) != 10:
+
+            st.error(
+                "Phone number must be 10 digits."
+            )
+
+        elif not ticket:
+
+            st.error(
+                "Please enter a ticket number."
             )
 
         else:
 
-            timestamp = datetime.now().strftime(
-                "%d/%m/%Y %H:%M"
-            )
-            
-            sheet.append_row(
-                [
-                    name,
-                    seller,
-                    ticket,
-                    phone,
-                    paid,
-                    timestamp,
-                    comments
-                ]
-            )
-            st.session_state.reset_form = True
-            st.session_state.show_success = True
-            
-            st.rerun()
-# --------------------------------------------------
-# VIEW ENTRIES
-# --------------------------------------------------
+            if not ticket.upper().startswith("T"):
+                ticket = f"T{ticket}"
 
-st.markdown("---")
-st.subheader("View Submitted Entries")
+            existing_phones = [
+                str(x).strip().replace(" ", "")
+                for x in sheet.col_values(4)[1:]
+            ]
 
-search_seller = st.text_input(
-    "Enter Seller Name",
-    key="search_seller"
-)
+            phone_check = phone
 
-if st.button("View My Entries"):
+            if phone_check and phone_check in existing_phones:
 
-    if not search_seller.strip():
-        st.warning("Please enter a seller name.")
-    else:
+                st.error(
+                    f"{phone} already exists."
+                )
 
-        records = sheet.get_all_records()
+            else:
 
-        results = []
+                timestamp = datetime.now().strftime(
+                    "%d/%m/%Y %H:%M"
+                )
+                
+                sheet.append_row(
+                    [
+                        name,
+                        seller,
+                        ticket,
+                        phone,
+                        paid,
+                        timestamp,
+                        comments
+                    ]
+                )
+                st.session_state.reset_form = True
+                st.session_state.show_success = True
+                
+                st.rerun()
+    # --------------------------------------------------
+    # VIEW ENTRIES
+    # --------------------------------------------------
 
-        for row in records:
+    st.markdown("---")
+    st.subheader("View Submitted Entries")
 
-            if search_seller.strip().lower() in str(row["Seller Name"]).strip().lower():
+    search_seller = st.text_input(
+        "Enter Seller Name",
+        key="search_seller"
+    )
+
+    if st.button("View My Entries"):
+
+        if not search_seller.strip():
+            st.warning("Please enter a seller name.")
+        else:
+
+            records = sheet.get_all_records()
+
+            results = []
+
+            for row in records:
+
+                if search_seller.strip().lower() in str(row["Seller Name"]).strip().lower():
+
+                    results.append(
+                        {
+                            "Seller Name": row["Seller Name"],
+                            "Ticket Holder": row["Name"],
+                            "Ticket Number": row["Ticket Number"]
+                        }
+                    )
+
+            if results:
+
+                st.metric("Total Entries", len(results))
+                
+                st.dataframe(
+                    results,
+                    width="stretch"
+                )
+            else:
+                st.info("No entries found for that seller.")
+
+    # --------------------------------------------------
+    # ADMIN VIEW
+    # --------------------------------------------------
+
+    st.markdown("---")
+    st.subheader("Admin Access")
+
+    admin_pin = st.text_input(
+        "Admin PIN",
+        type="password"
+    )
+
+    if st.button("View Full Table"):
+
+        if admin_pin == st.secrets["ADMIN_PIN"]:
+
+            records = sheet.get_all_records()
+            records.reverse()
+
+            results = []
+
+            for row in records:
 
                 results.append(
                     {
                         "Seller Name": row["Seller Name"],
                         "Ticket Holder": row["Name"],
-                        "Ticket Number": row["Ticket Number"]
+                        "Ticket Number": row["Ticket Number"],
+                        "Paid": row["Paid"]
                     }
                 )
 
-        if results:
+            st.success(f"{len(results)} entries found.")
 
-            st.metric("Total Entries", len(results))
-            
             st.dataframe(
                 results,
                 width="stretch"
             )
+
         else:
-            st.info("No entries found for that seller.")
+            st.error("Invalid PIN.")
 
-# --------------------------------------------------
-# ADMIN VIEW
-# --------------------------------------------------
+    # --------------------------------------------------
+    # LAST YEAR'S SALES TAB
+    # --------------------------------------------------
 
-st.markdown("---")
-st.subheader("Admin Access")
+with tab2:
 
-admin_pin = st.text_input(
-    "Admin PIN",
-    type="password"
-)
+    st.title("Last Year's Tickets")
 
-if st.button("View Full Table"):
+    last_year_sheet = client.open_by_key(SHEET_ID).worksheet(
+        "Last_Year_Tickets"
+    )
 
-    if admin_pin == st.secrets["ADMIN_PIN"]:
+    records = last_year_sheet.get_all_records()
 
-        records = sheet.get_all_records()
-        records.reverse()
+    if not records:
 
-        results = []
-
-        for row in records:
-
-            results.append(
-                {
-                    "Seller Name": row["Seller Name"],
-                    "Ticket Holder": row["Name"],
-                    "Ticket Number": row["Ticket Number"],
-                    "Paid": row["Paid"]
-                }
-            )
-
-        st.success(f"{len(results)} entries found.")
-
-        st.dataframe(
-            results,
-            width="stretch"
+        st.info(
+            "No records found in Last Year's Tickets yet."
         )
 
     else:
-        st.error("Invalid PIN.")
 
+        df = pd.DataFrame(records)
+        df.columns = df.columns.str.strip()
+
+        seller_names = sorted(
+            df["Seller"].dropna().unique()
+        )
+
+        seller = st.selectbox(
+            "Select Seller",
+            seller_names
+        )
+
+        filtered_df = df[
+            df["Seller"] == seller
+        ]
+
+        st.metric(
+            "Customers Last Year",
+            len(filtered_df)
+        )
+
+        st.dataframe(
+            filtered_df,
+            use_container_width=True,
+            hide_index=True
+        )
 # --------------------------------------------------
 # FOOTER
 # --------------------------------------------------
