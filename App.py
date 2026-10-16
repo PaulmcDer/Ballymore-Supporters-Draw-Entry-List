@@ -94,7 +94,6 @@ with tab1:
         st.session_state.name = ""
         st.session_state.phone = ""
         st.session_state.ticket = ""
-        st.session_state.seller = ""
         st.session_state.comments = ""
         st.session_state.paid = "Not Paid"   # or whatever default you want
         st.session_state.reset_form = False 
@@ -325,7 +324,7 @@ with tab2:
         ]
 
         st.metric(
-            "Customers Last Year",
+            "Tickets Last Year",
             len(filtered_df)
         )
 
