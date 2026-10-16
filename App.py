@@ -297,6 +297,10 @@ with tab2:
         "Last_Year_Tickets"
     )
 
+    show_sellers = st.button(
+        "📋 Show Last Year's Tickets By Seller"
+    )
+
     records = last_year_sheet.get_all_records()
 
     if not records:
@@ -308,32 +312,40 @@ with tab2:
     else:
 
         df = pd.DataFrame(records)
+
         df.columns = df.columns.str.strip()
 
-        seller_names = sorted(
-            df["Seller"].dropna().unique()
-        )
+        if "show_sellers" not in st.session_state:
+            st.session_state.show_sellers = False
 
-        seller = st.selectbox(
-            "Select Seller",
-            seller_names
-        )
+        if show_sellers:
+            st.session_state.show_sellers = True
 
-        filtered_df = df[
-            df["Seller"] == seller
-        ]
+        if st.session_state.show_sellers:
 
-        st.metric(
-            "Tickets Last Year",
-            len(filtered_df)
-        )
+            seller_names = sorted(
+                df["Seller"].dropna().unique()
+            )
 
-        st.dataframe(
-            filtered_df,
-            use_container_width=True,
-            hide_index=True
-        )
+            seller = st.selectbox(
+                "Select Seller",
+                seller_names
+            )
 
+            filtered_df = df[
+                df["Seller"] == seller
+            ]
+
+            st.metric(
+                "Tickets Last Year",
+                len(filtered_df)
+            )
+
+            st.dataframe(
+                filtered_df,
+                use_container_width=True,
+                hide_index=True
+            )
     # --------------------------------------------------
     # ADMIN VIEW
     # --------------------------------------------------
