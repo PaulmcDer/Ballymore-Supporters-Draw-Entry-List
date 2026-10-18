@@ -46,12 +46,18 @@ tab1, tab2, tab3 = st.tabs(
     ]
 )
 
-with tab1:
+# --------------------------------------------------
+# SESSION STATE
+# --------------------------------------------------
 
+if "save_pin_ok" not in st.session_state:
+    st.session_state.save_pin_ok = False
+    
 # --------------------------------------------------
 # PAGE
 # --------------------------------------------------
-
+with tab1:
+    
     col1, col2, col3 = st.columns([2, 1.5, 2])
 
     with col2:
@@ -279,8 +285,7 @@ with tab1:
                 st.metric("Total Entries", len(results))
                 
                 st.dataframe(
-                    results,
-                    width="stretch"
+                    results, use_container_width=True
                 )
             else:
                 st.info("No entries found for that seller.")
@@ -293,12 +298,35 @@ with tab2:
 
     st.title("Last Year's Tickets")
 
+# ----------------------------------------------
+# 1️⃣ SAVE TRANSACTION PIN (separate from Admin)
+# ----------------------------------------------
+    st.subheader("Last Year's Tickets PIN")
+
+    save_pin = st.text_input(
+        "Enter 4‑digit PIN",
+        type="password",
+        max_chars=4
+    )
+
+    if save_pin == st.secrets["SAVE_PIN"]:
+        st.session_state.save_pin_ok = True
+        st.success("Save PIN accepted")
+    elif save_pin == "":
+        st.session_state.save_pin_ok = False
+    else:
+        st.session_state.save_pin_ok = False
+        st.error("Incorrect Save PIN")
+
+        st.markdown("---")
+
     last_year_sheet = client.open_by_key(SHEET_ID).worksheet(
         "Last_Year_Tickets"
     )
 
     show_sellers = st.button(
-        "📋 Show Last Year's Tickets By Seller"
+        "📋 Show Last Year's Tickets By Seller",
+        disabled=not st.session_state.save_pin_ok
     )
 
     records = last_year_sheet.get_all_records()
@@ -382,10 +410,8 @@ with tab3:
 
             st.success(f"{len(results)} entries found.")
 
-            st.dataframe(
-                results,
-                width="stretch"
-            )
+            st.dataframe(results, use_container_width=True)
+
 
         else:
             st.error("Invalid PIN.")
