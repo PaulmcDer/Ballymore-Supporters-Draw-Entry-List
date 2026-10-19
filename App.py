@@ -38,11 +38,12 @@ sheet = client.open_by_key(SHEET_ID).worksheet("Ticket_Entries")
 # Spilt for Tabs
 # --------------------------------------------------
 
-tab1, tab2, tab3 = st.tabs(
+tab1, tab2, tab3, tab4 = st.tabs(
     [
         "🎟 Ticket Entry",
         "📋 Last Year's Sales",
-        "🔐 Admin"
+        "🔐 Admin",
+        "💳 Revolut"
     ]
 )
 
@@ -418,7 +419,55 @@ with tab3:
         else:
             st.error("Invalid PIN.")
 
+# --------------------------------------------------
+# REVOLUT PAYMENT TAB
+# --------------------------------------------------
 
+with tab4:
+
+    st.title("💳 Pay with Revolut")
+
+    st.info("""
+🎟️ Annual Membership: €100
+
+✅ Entry into 12 monthly draws
+
+🥇 1st Prize: €1,000
+🥈 2nd Prize: €100
+🥉 3rd Prize: €100
+""")
+
+    st.link_button(
+        "💳 Pay with Revolut",
+        st.secrets["REVOLUT_LINK"]
+    )
+
+    st.markdown("---")
+
+    col1, col2 = st.columns([1, 1])
+
+    with col1:
+        st.image(
+            "revolut_qr.png",
+            caption="Scan with Revolut App",
+            width=250
+        )
+
+    with col2:
+        st.subheader("Bank Transfer Details")
+
+        st.markdown("**Club Name**")
+        st.write("BALLYMORE GAA")
+
+        st.markdown("**IBAN**")
+        st.code("IE71BOFI90177371264687")
+
+        st.markdown("**BIC**")
+        st.code("BOFIIE2DXXX ")
+
+        st.info(
+        "Please include your name as the payment reference."
+        )
 # --------------------------------------------------
 # FOOTER
 # --------------------------------------------------
