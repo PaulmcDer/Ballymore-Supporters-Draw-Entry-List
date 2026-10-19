@@ -5,6 +5,7 @@ certifi==2026.10.18
 cffi==2.1.1
 charset-normalizer==3.5.2
 click==8.5.0
+colorama==0.4.6
 cryptography==50.0.2
 google-auth==2.62.0
 google-auth-oauthlib==1.5.0
@@ -30,6 +31,7 @@ pycparser==3.11
 pydeck==0.9.3
 python-dateutil==2.9.0.post0
 python-multipart==0.0.32
+qrcode==8.2
 referencing==0.37.0
 requests==2.34.2
 requests-oauthlib==2.0.0
