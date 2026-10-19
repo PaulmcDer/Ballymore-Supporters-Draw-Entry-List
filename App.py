@@ -252,10 +252,9 @@ with tab1:
 # --------------------------------------------------
 
     st.markdown("---")
-    st.subheader("View Submitted Entries")
 
     search_seller = st.text_input(
-        "Enter Seller Name",
+        "Enter Seller Name To View Entries",
         key="search_seller"
     )
 
@@ -304,8 +303,6 @@ with tab2:
 # ----------------------------------------------
 # session_state as: Memory for this user's session
 # "not in" is checking whether something doesn't exist yet.
-
-    st.subheader("Last Year's Tickets PIN")
 
     save_pin = st.text_input(
         "Enter 4‑digit PIN",
