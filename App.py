@@ -104,9 +104,9 @@ with tab1:
         st.session_state.paid = "Not Paid"   # or whatever default you want
         st.session_state.reset_form = False 
 
-    # --------------------------------------------------
-    # FORM
-    # --------------------------------------------------
+# --------------------------------------------------
+# FORM
+# --------------------------------------------------
 
     with st.form(
         "draw_entry_form",
@@ -156,9 +156,9 @@ with tab1:
         )
 
 
-    #--------------------------------------------------
-    # New Section 
-    #--------------------------------------------------
+#--------------------------------------------------
+# New Section 
+#--------------------------------------------------
 
     if st.session_state.show_success:
 
@@ -167,9 +167,10 @@ with tab1:
         )
         st.session_state.show_success = False
 
-    # --------------------------------------------------
-    # PROCESS ENTRY
-    # --------------------------------------------------
+# --------------------------------------------------
+# PROCESS ENTRY
+# --------------------------------------------------
+# st.session_state. is a variable that Streamlit remembers between reruns
 
     if submit:
 
@@ -246,9 +247,9 @@ with tab1:
                 st.session_state.show_success = True
                 
                 st.rerun()
-    # --------------------------------------------------
-    # VIEW ENTRIES
-    # --------------------------------------------------
+# --------------------------------------------------
+# VIEW ENTRIES
+# --------------------------------------------------
 
     st.markdown("---")
     st.subheader("View Submitted Entries")
@@ -290,9 +291,9 @@ with tab1:
             else:
                 st.info("No entries found for that seller.")
 
-    # --------------------------------------------------
-    # LAST YEAR'S SALES TAB
-    # --------------------------------------------------
+# --------------------------------------------------
+# LAST YEAR'S SALES TAB
+# --------------------------------------------------
 
 with tab2:
 
@@ -301,6 +302,9 @@ with tab2:
 # ----------------------------------------------
 # 1️⃣ SAVE TRANSACTION PIN (separate from Admin)
 # ----------------------------------------------
+# session_state as: Memory for this user's session
+# "not in" is checking whether something doesn't exist yet.
+
     st.subheader("Last Year's Tickets PIN")
 
     save_pin = st.text_input(
@@ -311,12 +315,12 @@ with tab2:
 
     if save_pin == st.secrets["SAVE_PIN"]:
         st.session_state.save_pin_ok = True
-        st.success("Save PIN accepted")
+        st.success("PIN accepted")
     elif save_pin == "":
         st.session_state.save_pin_ok = False
     else:
         st.session_state.save_pin_ok = False
-        st.error("Incorrect Save PIN")
+        st.error("Incorrect PIN")
 
         st.markdown("---")
 
@@ -342,14 +346,15 @@ with tab2:
         df = pd.DataFrame(records)
 
         df.columns = df.columns.str.strip()
-
+            #if "show_sellers" doesn't exist:
         if "show_sellers" not in st.session_state:
             st.session_state.show_sellers = False
 
         if show_sellers:
             st.session_state.show_sellers = True
 
-        if st.session_state.show_sellers:
+        if (st.session_state.show_sellers
+            and st.session_state.save_pin_ok):
 
             seller_names = sorted(
                 df["Seller"].dropna().unique()
@@ -374,9 +379,9 @@ with tab2:
                 use_container_width=True,
                 hide_index=True
             )
-    # --------------------------------------------------
-    # ADMIN VIEW
-    # --------------------------------------------------
+# --------------------------------------------------
+# ADMIN VIEW
+# --------------------------------------------------
 
 with tab3:
 
