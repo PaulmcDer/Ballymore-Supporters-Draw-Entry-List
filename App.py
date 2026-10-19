@@ -428,7 +428,7 @@ with tab4:
     st.title("💳 Pay with Revolut")
 
     st.info("""
-🎟️ Annual Membership: €100
+    🎟 1 Ticket: €100
 
 ✅ Entry into 12 monthly draws
 
