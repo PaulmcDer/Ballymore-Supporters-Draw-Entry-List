@@ -3,7 +3,11 @@ import gspread
 import pandas as pd
 from google.oauth2.service_account import Credentials
 from datetime import datetime
+#from streamlit_extras.metric_cards import style_metric_cards
 
+# --------------------------------------------------
+# GOOGLE SHEETS CONNECTION
+# --------------------------------------------------
 # --------------------------------------------------
 # CONFIG
 # --------------------------------------------------
@@ -15,6 +19,7 @@ st.set_page_config(
     page_icon="🏐",
     layout="centered"
 )
+
 
 # --------------------------------------------------
 # GOOGLE SHEETS CONNECTION
@@ -33,6 +38,135 @@ creds = Credentials.from_service_account_info(
 client = gspread.authorize(creds)
 
 sheet = client.open_by_key(SHEET_ID).worksheet("Ticket_Entries")
+
+# --------------------------------------------------
+# CSS STYLE For Buttons
+# --------------------------------------------------
+st.markdown("""
+<style>
+
+/* Normal buttons */
+.stButton > button {
+    background-color: #FFD700 !important;
+    color: black !important;
+    font-weight: bold !important;
+    border-radius: 8px !important;
+    border: 1px solid #b8860b !important;
+}
+
+/* Hover */
+.stButton > button:hover {
+    background-color: #ffea00 !important;
+    color: black !important;
+}
+
+/* Link buttons (Revolut button) */
+[data-testid="stLinkButton"] a {
+    background-color: #FFD700 !important;
+    color: black !important;
+    font-weight: bold !important;
+    border-radius: 8px !important;
+    border: 1px solid #b8860b !important;
+}
+
+/* Link button hover */
+[data-testid="stLinkButton"] a:hover {
+    background-color: #ffea00 !important;
+    color: black !important;
+}
+
+/* Form Submit Buttons */
+div[data-testid="stForm"] button {
+    background-color: #FFD700 !important;
+    color: black !important;
+    font-weight: bold !important;
+    border-radius: 8px !important;
+    border: 1px solid #b8860b !important;
+}
+
+div[data-testid="stForm"] button:hover {
+    background-color: #ffea00 !important;
+    color: black !important;
+}
+
+.stButton > button {
+    background-color: #FFD700 !important;
+    color: #000000 !important;
+    font-weight: bold !important;
+}
+
+.stButton > button p {
+    color: #000000 !important;
+}
+
+div[data-testid="stForm"] button {
+    background-color: #FFD700 !important;
+    color: #000000 !important;
+    font-weight: bold !important;
+}
+
+div[data-testid="stForm"] button p {
+    color: #000000 !important;
+}
+/* Revolut Link Button Text */
+[data-testid="stLinkButton"] a,
+[data-testid="stLinkButton"] a * {
+    color: black !important;
+    font-weight: bold !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# --------------------------------------------------
+# CSS STYLE For Backround
+# --------------------------------------------------
+
+st.markdown("""
+<style>
+
+/* Main app background */
+.stApp {
+    background-color: #000000;
+}
+
+/* Main content area */
+[data-testid="stAppViewContainer"] {
+    background-color: #000000;
+}
+
+/* Sidebar */
+[data-testid="stSidebar"] {
+    background-color: #111111;
+}
+
+/* Buttons */
+.stButton > button {
+    background-color: #FFD700 !important;
+    color: black !important;
+    font-weight: bold !important;
+    border-radius: 8px !important;
+    border: 1px solid #b8860b !important;
+}
+
+/* Form submit buttons */
+div[data-testid="stForm"] button {
+    background-color: #FFD700 !important;
+    color: black !important;
+    font-weight: bold !important;
+}
+
+/* Headers */
+h1, h2, h3 {
+    color: white;
+}
+
+/* Text */
+p, label, div {
+    color: white;
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 # --------------------------------------------------
 # Spilt for Tabs
@@ -387,15 +521,11 @@ with tab3:
 
     st.header("💳 Pay with Revolut")
 
-    st.info("""
-    🎟 1 Ticket: €100
+    st.markdown("""
+    🎟️ **1xTicket €100** | ✅ 12 Monthly Draws
 
-✅ Entry into 12 monthly draws
-
-🥇 1st Prize: €1,000
-🥈 2nd Prize: €100
-🥉 3rd Prize: €100
-""")
+    🥇 €1,000 | 🥈 €100 | 🥉 €100
+    """)
 
     st.link_button(
         "💳 Pay with Revolut",
