@@ -124,7 +124,7 @@ tab1, tab2, tab3, tab4 = st.tabs(
     [
         "🎟 Ticket Entry",
         "📋 Last Year's Sales",
-        "💳 Revolut",
+        "💳 Payment",
         "🔐 Admin"
         
     ]
@@ -385,7 +385,7 @@ with tab1:
 
 with tab2:
 
-    st.header("Last Year's Tickets")
+    st.subheader("Last Year's Tickets")
 
 # ----------------------------------------------
 # 1️⃣ SAVE TRANSACTION PIN (separate from Admin)
@@ -472,7 +472,7 @@ with tab2:
 
 with tab3:
 
-    st.header("💳 Pay with Revolut")
+    st.write("💳 Pay with Revolut")
 
     st.markdown("""
     🎟️ **1xTicket €100** | ✅ 12 Monthly Draws
@@ -497,7 +497,7 @@ with tab3:
         )
 
     with col2:
-        st.subheader("Bank Transfer Details")
+        st.markdown("*Bank Transfer Details (BOI)*")
 
         st.markdown("**Club Name**")
         st.write("BALLYMORE GAA")
