@@ -118,57 +118,6 @@ div[data-testid="stForm"] button p {
 """, unsafe_allow_html=True)
 
 # --------------------------------------------------
-# CSS STYLE For Backround
-# --------------------------------------------------
-
-st.markdown("""
-<style>
-
-/* Main app background */
-.stApp {
-    background-color: #000000;
-}
-
-/* Main content area */
-[data-testid="stAppViewContainer"] {
-    background-color: #000000;
-}
-
-/* Sidebar */
-[data-testid="stSidebar"] {
-    background-color: #111111;
-}
-
-/* Buttons */
-.stButton > button {
-    background-color: #FFD700 !important;
-    color: black !important;
-    font-weight: bold !important;
-    border-radius: 8px !important;
-    border: 1px solid #b8860b !important;
-}
-
-/* Form submit buttons */
-div[data-testid="stForm"] button {
-    background-color: #FFD700 !important;
-    color: black !important;
-    font-weight: bold !important;
-}
-
-/* Headers */
-h1, h2, h3 {
-    color: white;
-}
-
-/* Text */
-p, label, div {
-    color: white;
-}
-
-</style>
-""", unsafe_allow_html=True)
-
-# --------------------------------------------------
 # Spilt for Tabs
 # --------------------------------------------------
 
