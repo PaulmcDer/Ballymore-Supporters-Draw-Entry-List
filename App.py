@@ -42,8 +42,9 @@ tab1, tab2, tab3, tab4 = st.tabs(
     [
         "🎟 Ticket Entry",
         "📋 Last Year's Sales",
-        "🔐 Admin",
-        "💳 Revolut"
+        "💳 Revolut",
+        "🔐 Admin"
+        
     ]
 )
 
@@ -377,53 +378,12 @@ with tab2:
                 use_container_width=True,
                 hide_index=True
             )
-# --------------------------------------------------
-# ADMIN VIEW
-# --------------------------------------------------
-
-with tab3:
-
-    st.markdown("---")
-    st.subheader("Admin Access")
-
-    admin_pin = st.text_input(
-        "Admin PIN",
-        type="password"
-    )
-
-    if st.button("View Full Table"):
-
-        if admin_pin == st.secrets["ADMIN_PIN"]:
-
-            records = sheet.get_all_records()
-            records.reverse()
-
-            results = []
-
-            for row in records:
-
-                results.append(
-                    {
-                        "Seller Name": row["Seller Name"],
-                        "Ticket Holder": row["Name"],
-                        "Ticket Number": row["Ticket Number"],
-                        "Paid": row["Paid"]
-                    }
-                )
-
-            st.success(f"{len(results)} entries found.")
-
-            st.dataframe(results, use_container_width=True)
-
-
-        else:
-            st.error("Invalid PIN.")
 
 # --------------------------------------------------
 # REVOLUT PAYMENT TAB
 # --------------------------------------------------
 
-with tab4:
+with tab3:
 
     st.title("💳 Pay with Revolut")
 
@@ -468,6 +428,48 @@ with tab4:
         st.info(
         "Please include your name as the payment reference."
         )
+
+# --------------------------------------------------
+# ADMIN VIEW
+# --------------------------------------------------
+
+with tab4:
+
+    st.markdown("---")
+    st.subheader("Admin Access")
+
+    admin_pin = st.text_input(
+        "Admin PIN",
+        type="password"
+    )
+
+    if st.button("View Full Table"):
+
+        if admin_pin == st.secrets["ADMIN_PIN"]:
+
+            records = sheet.get_all_records()
+            records.reverse()
+
+            results = []
+
+            for row in records:
+
+                results.append(
+                    {
+                        "Seller Name": row["Seller Name"],
+                        "Ticket Holder": row["Name"],
+                        "Ticket Number": row["Ticket Number"],
+                        "Paid": row["Paid"]
+                    }
+                )
+
+            st.success(f"{len(results)} entries found.")
+
+            st.dataframe(results, use_container_width=True)
+
+
+        else:
+            st.error("Invalid PIN.")
 # --------------------------------------------------
 # FOOTER
 # --------------------------------------------------
