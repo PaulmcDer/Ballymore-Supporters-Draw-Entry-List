@@ -6,9 +6,6 @@ from datetime import datetime
 #from streamlit_extras.metric_cards import style_metric_cards
 
 # --------------------------------------------------
-# GOOGLE SHEETS CONNECTION
-# --------------------------------------------------
-# --------------------------------------------------
 # CONFIG
 # --------------------------------------------------
 
@@ -19,7 +16,6 @@ st.set_page_config(
     page_icon="🏐",
     layout="centered"
 )
-
 
 # --------------------------------------------------
 # GOOGLE SHEETS CONNECTION
@@ -38,6 +34,9 @@ creds = Credentials.from_service_account_info(
 client = gspread.authorize(creds)
 
 sheet = client.open_by_key(SHEET_ID).worksheet("Ticket_Entries")
+
+records = sheet.get_all_records()
+ticket_count = len(records)
 
 # --------------------------------------------------
 # CSS STYLE For Buttons
@@ -148,7 +147,12 @@ with tab1:
     with col2:
         st.image(
             "logo.png",
-            width=140
+            width=160
+        )
+
+        st.metric(
+            "🎟 Tickets Entered This Year",
+            ticket_count
         )
 
     st.title("Supporters Monthly Draw Tickets")
