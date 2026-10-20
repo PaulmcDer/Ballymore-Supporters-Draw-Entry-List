@@ -298,7 +298,7 @@ with tab1:
 
 with tab2:
 
-    st.title("Last Year's Tickets")
+    st.header("Last Year's Tickets")
 
 # ----------------------------------------------
 # 1️⃣ SAVE TRANSACTION PIN (separate from Admin)
@@ -385,7 +385,7 @@ with tab2:
 
 with tab3:
 
-    st.title("💳 Pay with Revolut")
+    st.header("💳 Pay with Revolut")
 
     st.info("""
     🎟 1 Ticket: €100
