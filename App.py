@@ -137,6 +137,9 @@ tab1, tab2, tab3, tab4 = st.tabs(
 if "save_pin_ok" not in st.session_state:
     st.session_state.save_pin_ok = False
     
+if "seller_pin_ok" not in st.session_state:
+    st.session_state.seller_pin_ok = False
+    
 # --------------------------------------------------
 # PAGE
 # --------------------------------------------------
@@ -189,8 +192,35 @@ with tab1:
         st.session_state.ticket = ""
         st.session_state.comments = ""
         st.session_state.paid = "Not Paid"   # or whatever default you want
-        st.session_state.reset_form = False 
+        st.session_state.reset_form = False
 
+    # --------------------------------------------------
+    # Seller pin
+    # --------------------------------------------------
+    st.markdown("---")
+
+    seller_pin = st.text_input(
+        "Seller PIN",
+        type="password",
+        max_chars=4,
+        key="seller_pin"
+    )
+
+    if seller_pin == st.secrets["SAVE_PIN"]:
+        st.session_state.seller_pin_ok = True
+        st.success("PIN accepted")
+
+    elif seller_pin == "":
+        st.session_state.seller_pin_ok = False
+
+    else:
+        st.session_state.seller_pin_ok = False
+        st.error("Incorrect PIN")
+
+    if not st.session_state.seller_pin_ok:
+        st.info(
+            "Enter Seller PIN to enable ticket entry and viewing seller tickets."
+        )
 # --------------------------------------------------
 # FORM
 # --------------------------------------------------
@@ -239,7 +269,8 @@ with tab1:
         )
 
         submit = st.form_submit_button(
-            "Submit Entry"
+            "Submit Entry",
+            disabled=not st.session_state.seller_pin_ok
         )
 
 
@@ -345,7 +376,12 @@ with tab1:
         key="search_seller"
     )
 
-    if st.button("View My Entries"):
+    view_entries = st.button(
+        "View My Entries",
+        disabled=not st.session_state.seller_pin_ok
+    )
+
+    if view_entries:
 
         if not search_seller.strip():
             st.warning("Please enter a seller name.")
