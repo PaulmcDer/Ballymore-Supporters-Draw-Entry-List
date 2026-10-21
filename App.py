@@ -12,7 +12,7 @@ from datetime import datetime
 SHEET_ID = "1umG0zNs4Uz9IqfZXPXEeAgfSWoRTzDDsEwlSRC-3PnM"
 
 st.set_page_config(
-    page_title="Supporters Monthly Draw Ticket entry",
+    page_title="Supporters Monthly Draw Tickets",
     page_icon="🏐",
     layout="centered"
 )
@@ -155,11 +155,10 @@ with tab1:
             ticket_count
         )
 
-    st.title("Supporters Monthly Draw Tickets")
+    st.write("🏐 Supporters Monthly Draw Tickets 🏐")
 
-    st.write(
-        "Please enter the ticket holder's details below and click Submit Entry when complete."
-    )
+    st.markdown("**Please enter the ticket holder's details below and click Submit Entry when complete**")
+        
 
     if "name" not in st.session_state:
         st.session_state.name = ""
@@ -475,9 +474,9 @@ with tab3:
     st.write("💳 Pay with Revolut")
 
     st.markdown("""
-    🎟️ **1xTicket €100** | ✅ 12 Monthly Draws
+    🎟️ **1 Ticket €100** | ✅ 12 Monthly Draws
 
-    🥇 €1,000 | 🥈 €100 | 🥉 €100
+    Monthly prizes | 🥇 €1,000 | 🥈 €100 | 🥉 €100
     """)
 
     st.link_button(
