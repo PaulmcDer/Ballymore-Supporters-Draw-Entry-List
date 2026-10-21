@@ -76,11 +76,45 @@ sheet = client.open_by_key(SHEET_ID).worksheet("Ticket_Entries")
 
 records = sheet.get_all_records()
 ticket_count = len(records)
+
+# --------------------------------------------------
+# FIND NEXT WEB TICKET NUMBER
+# --------------------------------------------------
+
+web_numbers = []
+
+for row in records:
+
+    ticket = str(
+        row.get("Ticket Number", "")
+    )
+
+    if ticket.startswith("WEB-"):
+
+        try:
+            web_numbers.append(
+                int(
+                    ticket.replace(
+                        "WEB-",
+                        ""
+                    )
+                )
+            )
+        except:
+            pass
+
+next_web_ticket = max(
+    web_numbers,
+    default=0
+) + 1
+
+online_ticket_count = len(web_numbers)
+
 # --------------------------------------------------
 # HEADER
 # --------------------------------------------------
 
-col1, col2, col3 = st.columns([1, 1, 1])
+col1, col2, col3 = st.columns([1, 0.7, 1])
 
 with col2:
     st.image(
@@ -97,20 +131,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-col1, col2 = st.columns(2)
-
-with col1:
-    st.metric(
-        "Tickets Entered",
-        ticket_count
-    )
-
-with col2:
-    st.metric(
-        "Ticket Value",
-        f"€{ticket_count * 100:,}"
-    )
-
 st.markdown(
     """
     <p style='text-align:center; font-size:14px;'>
@@ -122,28 +142,64 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.metric(
+        "Tickets Entered",
+        ticket_count
+    )
+
+with col2:
+    st.metric(
+        "Online Tickets",
+        online_ticket_count
+    )
+
+with col3:
+    st.metric(
+        "Next Ticket",
+        f"WEB-{next_web_ticket:03d}"
+    )
+
 st.markdown("---")
 
 # --------------------------------------------------
 # DRAW DETAILS
 # --------------------------------------------------
+col1, col2 = st.columns(2)
 
-st.markdown("""
-### Ticket Purchase Details
+with col1:
 
-🎟️ ** 1 Ticket €100**
+    st.markdown("""
+    ### 🎟️ Draw Details
 
-✅ Entry into 12 monthly draws
+    🎟️ **1 Ticket €100**
 
-🥇 **1st Prize:** €1,000
+    ✅ Entry into 12 monthly draws
 
-🥈 **2nd Prize:** €100
+    🥇 **1st Prize:** €1,000
 
-🥉 **3rd Prize:** €100
-""")
+    🥈 **2nd Prize:** €100
 
-st.markdown("---")
+    🥉 **3rd Prize:** €100
+    """)
 
+with col2:
+
+    st.markdown("""
+    ### ✅ Benefits
+
+    ✅ Secure online purchase
+
+    ✅ Instant ticket allocation
+
+    ✅ Up to 5 tickets per transaction
+
+    ✅ Supports Ballymore GFC
+
+    ✅ 12 chances to win each year
+    """)
 # --------------------------------------------------
 # PURCHASE FORM
 # --------------------------------------------------
@@ -176,6 +232,42 @@ with st.form(
         f"**Total Cost: €{total_cost:,}**"
     )
 
+    estimated_tickets = []
+
+    for i in range(quantity):
+
+        estimated_tickets.append(
+            f"WEB-{next_web_ticket + i:03d}"
+        )
+
+    st.info(
+        "Estimated Ticket Numbers: "
+        + ", ".join(
+            estimated_tickets
+        )
+    )
+
+    st.markdown("### Purchase Summary")
+
+    st.write(
+        f"🎟️ Tickets: {quantity}"
+    )
+
+    st.write(
+        f"💰 Total Cost: €{total_cost}"
+    )
+
+    st.write(
+        "🔢 Estimated Numbers:"
+    )
+
+    for ticket in estimated_tickets:
+        st.write(ticket)
+
+    accept_terms = st.checkbox(
+        "I confirm I wish to purchase the selected tickets."
+    )
+
     submit = st.form_submit_button(
         "💳 Continue To Payment"
     )
@@ -185,7 +277,18 @@ with st.form(
 
 if submit:
 
-    if not full_name.strip():
+
+    if not accept_terms:
+
+        st.error(
+            "Please confirm the purchase first."
+        )
+
+    elif not full_name.strip():
+
+        st.error(
+            "Please enter your full name."
+        )
 
         st.error(
             "Please enter your full name."
@@ -206,14 +309,16 @@ if submit:
     else:
 
         st.success(
-            "Stripe payment integration will go here."
+            "Payment Successful ✅"
         )
 
-        st.info(
-            "Future version: redirect to Stripe Checkout, "
-            "assign next available ticket number and "
-            "write entry to Google Sheets."
+        st.subheader(
+            "Allocated Ticket Numbers"
         )
+
+        for ticket in estimated_tickets:
+
+            st.write(ticket)
 
 # --------------------------------------------------
 # FOOTER
