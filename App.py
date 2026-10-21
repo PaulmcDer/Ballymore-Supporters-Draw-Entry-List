@@ -154,15 +154,7 @@ with tab1:
             "🎟 Tickets Entered This Year",
             ticket_count
         )
-    st.markdown(
-    """
-    <h2 style='text-align: center;'>
-        🏐 Supporters Monthly Draw Tickets 🏐️
-    </h2>
-    """,
-    unsafe_allow_html=True
-    )
-   # st.write("🏐 Supporters Monthly Draw Tickets 🏐")
+    st.write("🏐 Supporters Monthly Draw Tickets 🏐")
 
     st.caption("**Please enter the ticket holder's details below and click Submit Entry when complete**")
         
