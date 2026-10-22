@@ -78,6 +78,36 @@ sheet = client.open_by_key(SHEET_ID).worksheet("Ticket_Entries")
 records = sheet.get_all_records()
 ticket_count = len(records)
 
+stripe.api_key = st.secrets["STRIPE_SECRET_KEY"]
+
+st.write("Stripe Connected ✅")
+
+# --------------------------------------------------
+# STRIPE CHECKOUT SESSION
+# --------------------------------------------------
+
+def create_checkout_session(amount_eur):
+
+    session = stripe.checkout.Session.create(
+        mode="payment",
+        line_items=[
+            {
+                "price_data": {
+                    "currency": "eur",
+                    "product_data": {
+                        "name": "Ballymore Draw Tickets"
+                    },
+                    "unit_amount": amount_eur * 100,
+                },
+                "quantity": 1,
+            }
+        ],
+        success_url="https://example.com/success",
+        cancel_url="https://example.com/cancel",
+    )
+
+    return session.url
+
 # --------------------------------------------------
 # FIND NEXT WEB TICKET NUMBER
 # --------------------------------------------------
@@ -242,7 +272,7 @@ with st.form(
         )
 
     st.info(
-        "Estimated Ticket Numbers: "
+        "Provisional Ticket Numbers: "
         + ", ".join(
             estimated_tickets
         )
@@ -313,10 +343,6 @@ if submit:
             "Details accepted ✅"
         )
 
-        st.success(
-            "Details accepted ✅"
-        )
-
         st.markdown("### Payment Summary")
 
         st.write(f"👤 {full_name}")
@@ -327,9 +353,13 @@ if submit:
 
         st.markdown("---")
 
+        checkout_url = create_checkout_session(
+            total_cost
+        )
+
         st.link_button(
-            "💳 Continue to Stripe",
-            st.secrets["STRIPE_PAYMENT_LINK"]
+            f"💳 Continue to Stripe (€{total_cost})",
+            checkout_url
         )
 
 # --------------------------------------------------
