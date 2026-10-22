@@ -80,20 +80,41 @@ ticket_count = len(records)
 
 stripe.api_key = st.secrets["STRIPE_SECRET_KEY"]
 
+# --------------------------------------------------
+# STRIPE Sucess 
+# --------------------------------------------------
+
 st.write("Stripe Connected ✅")
 
 success = st.query_params.get("success")
+session_id = st.query_params.get("session_id")
 
 if success == "true":
 
     st.success(
         "Payment Successful ✅"
     )
+
+    session = stripe.checkout.Session.retrieve(
+        session_id
+    )
+
+    st.write("Session Metadata:")
+
+    st.write(
+        session.metadata
+    )
 # --------------------------------------------------
 # STRIPE CHECKOUT SESSION
 # --------------------------------------------------
 
-def create_checkout_session(amount_eur):
+def create_checkout_session(
+    amount_eur,
+    full_name,
+    mobile,
+    email,
+    quantity
+):
 
     session = stripe.checkout.Session.create(
         mode="payment",
@@ -109,14 +130,23 @@ def create_checkout_session(amount_eur):
                 "quantity": 1,
             }
         ],
-        
-        success_url="http://localhost:8501/?success=true",
+        customer_email=email,
+        metadata={
+            "full_name": full_name,
+            "mobile": mobile,
+            "email": email,
+            "quantity": str(quantity)
+        },
+        success_url=(
+            "http://localhost:8501/"
+            "?success=true"
+            "&session_id={CHECKOUT_SESSION_ID}"
+        ),
         cancel_url="http://localhost:8501/?cancelled=true",
-
-        #use my URL for final streamlit
-       # success_url="https://your-app.streamlit.app/?success=true",
-       # cancel_url="https://your-app.streamlit.app/?cancelled=true",
     )
+
+    st.write("Metadata:")
+    st.write(session.metadata)
 
     return session.url
 
@@ -370,7 +400,11 @@ if submit:
         st.session_state["buyer_quantity"] = quantity
 
         checkout_url = create_checkout_session(
-            total_cost
+            total_cost,
+            full_name,
+            mobile,
+            email,
+            quantity
         )
 
         st.link_button(
