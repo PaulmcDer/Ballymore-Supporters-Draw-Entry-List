@@ -3,6 +3,7 @@ import gspread
 from google.oauth2.service_account import Credentials
 from datetime import datetime
 import pandas as pd
+import stripe
 
 # --------------------------------------------------
 # PAGE CONFIG
@@ -312,13 +313,22 @@ if submit:
             "Details accepted ✅"
         )
 
-        st.info(
-            f"You are purchasing {quantity} ticket(s) "
-            f"for €{total_cost}."
+        st.success(
+            "Details accepted ✅"
         )
 
+        st.markdown("### Payment Summary")
+
+        st.write(f"👤 {full_name}")
+        st.write(f"📱 {mobile}")
+        st.write(f"📧 {email}")
+        st.write(f"🎟️ {quantity} ticket(s)")
+        st.write(f"💰 Total Due: €{total_cost}")
+
+        st.markdown("---")
+
         st.link_button(
-            f"💳 Continue to Stripe (€{total_cost})",
+            "💳 Continue to Stripe",
             st.secrets["STRIPE_PAYMENT_LINK"]
         )
 
