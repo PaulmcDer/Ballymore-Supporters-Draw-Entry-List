@@ -102,8 +102,8 @@ def create_checkout_session(amount_eur):
                 "quantity": 1,
             }
         ],
-        success_url="https://example.com/success",
-        cancel_url="https://example.com/cancel",
+        success_url="https://your-app.streamlit.app/?success=true",
+        cancel_url="https://your-app.streamlit.app/?cancelled=true",
     )
 
     return session.url
@@ -231,6 +231,30 @@ with col2:
 
     ✅ 12 chances to win each year
     """)
+#--------------------------------------------------
+#Ticket Calculation
+#--------------------------------------------------
+quantity = st.selectbox(
+    "Number of Tickets",
+    [1, 2, 3, 4, 5]
+)
+
+total_cost = quantity * 100
+
+st.markdown(
+    f"**Total Cost: €{total_cost:,}**"
+)
+
+estimated_tickets = []
+
+for i in range(quantity):
+    estimated_tickets.append(
+        f"WEB-{next_web_ticket + i:03d}"
+    )
+
+st.write(
+    f"🎟 Provisional Numbers: {len(estimated_tickets)}"
+)
 # --------------------------------------------------
 # PURCHASE FORM
 # --------------------------------------------------
@@ -238,7 +262,7 @@ with col2:
 with st.form(
     "online_purchase_form",
     clear_on_submit=False
-):
+    ):
 
     full_name = st.text_input(
         "Full Name"
@@ -250,32 +274,6 @@ with st.form(
 
     email = st.text_input(
         "Email Address"
-    )
-
-    quantity = st.selectbox(
-        "Number of Tickets",
-        [1, 2, 3, 4, 5]
-    )
-
-    total_cost = quantity * 100
-
-    st.markdown(
-        f"**Total Cost: €{total_cost:,}**"
-    )
-
-    estimated_tickets = []
-
-    for i in range(quantity):
-
-        estimated_tickets.append(
-            f"WEB-{next_web_ticket + i:03d}"
-        )
-
-    st.info(
-        "Provisional Ticket Numbers: "
-        + ", ".join(
-            estimated_tickets
-        )
     )
 
     st.markdown("### Purchase Summary")
