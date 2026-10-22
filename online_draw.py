@@ -206,7 +206,7 @@ with col2:
 
 with st.form(
     "online_purchase_form",
-    clear_on_submit=True
+    clear_on_submit=False
 ):
 
     full_name = st.text_input(
@@ -309,16 +309,18 @@ if submit:
     else:
 
         st.success(
-            "Payment Successful ✅"
+            "Details accepted ✅"
         )
 
-        st.subheader(
-            "Allocated Ticket Numbers"
+        st.info(
+            f"You are purchasing {quantity} ticket(s) "
+            f"for €{total_cost}."
         )
 
-        for ticket in estimated_tickets:
-
-            st.write(ticket)
+        st.link_button(
+            f"💳 Continue to Stripe (€{total_cost})",
+            st.secrets["STRIPE_PAYMENT_LINK"]
+        )
 
 # --------------------------------------------------
 # FOOTER
