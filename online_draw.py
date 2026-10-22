@@ -82,6 +82,13 @@ stripe.api_key = st.secrets["STRIPE_SECRET_KEY"]
 
 st.write("Stripe Connected ✅")
 
+success = st.query_params.get("success")
+
+if success == "true":
+
+    st.success(
+        "Payment Successful ✅"
+    )
 # --------------------------------------------------
 # STRIPE CHECKOUT SESSION
 # --------------------------------------------------
@@ -102,8 +109,13 @@ def create_checkout_session(amount_eur):
                 "quantity": 1,
             }
         ],
-        success_url="https://your-app.streamlit.app/?success=true",
-        cancel_url="https://your-app.streamlit.app/?cancelled=true",
+        
+        success_url="http://localhost:8501/?success=true",
+        cancel_url="http://localhost:8501/?cancelled=true",
+
+        #use my URL for final streamlit
+       # success_url="https://your-app.streamlit.app/?success=true",
+       # cancel_url="https://your-app.streamlit.app/?cancelled=true",
     )
 
     return session.url
@@ -253,8 +265,9 @@ for i in range(quantity):
     )
 
 st.write(
-    f"🎟 Provisional Numbers: {len(estimated_tickets)}"
+    f"🎟 Reserved Ticket Numbers: {len(estimated_tickets)}"
 )
+
 # --------------------------------------------------
 # PURCHASE FORM
 # --------------------------------------------------
@@ -350,6 +363,11 @@ if submit:
         st.write(f"💰 Total Due: €{total_cost}")
 
         st.markdown("---")
+
+        st.session_state["buyer_name"] = full_name
+        st.session_state["buyer_mobile"] = mobile
+        st.session_state["buyer_email"] = email
+        st.session_state["buyer_quantity"] = quantity
 
         checkout_url = create_checkout_session(
             total_cost
