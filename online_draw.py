@@ -75,6 +75,13 @@ stripe.api_key = st.secrets["STRIPE_SECRET_KEY"]
 
 success = st.query_params.get("success")
 session_id = st.query_params.get("session_id")
+cancelled = st.query_params.get("cancelled")
+
+if cancelled == "true":
+
+    st.warning(
+        "Payment was cancelled. No tickets have been allocated."
+    )
 
 if success == "true":
 
@@ -169,13 +176,17 @@ if success == "true":
     "Payment Successful ✅"
     )
 
+    st.write(
+    f"Thank you {full_name} for supporting Ballymore GFC."
+    )
+
     st.subheader(
         "Your Ticket Numbers"
     )
 
     for ticket in allocated_tickets:
 
-        st.write(ticket)
+        st.code(ticket)
 
     st.info(
         "Your tickets have been recorded and entered into the Ballymore Supporters Draw."
@@ -243,6 +254,7 @@ def create_checkout_session(
             "email": email,
             "quantity": str(quantity)
         },
+#https://YOUR-STREAMLIT-APP.streamlit.app (Use my app url for real event. localhost for testing only!
         success_url=(
             "http://localhost:8501/"
             "?success=true"
