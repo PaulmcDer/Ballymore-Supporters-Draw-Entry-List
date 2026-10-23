@@ -177,9 +177,8 @@ if success == "true":
 
     if session_id in processed_ids:
 
-        st.warning(
-            "This payment has already been processed."
-        )
+        st.query_params.clear()
+        st.rerun()
 
         st.stop()
     quantity = int(
@@ -292,7 +291,7 @@ if success == "true":
                 "WEB",              # Seller Name
                 ticket,             # Ticket Number
                 mobile,             # Phone Number
-                "Paid",             # Paid
+                "Paid",             # Paid7
                 timestamp,          # Date Submitted
                 "Online Purchase"   # Comments
             ]
@@ -403,14 +402,14 @@ col1, col2, col3 = st.columns([1, 0.7, 1])
 with col2:
     st.image(
         "logo.png",
-        width=140
+        width=135
     )
 
 st.markdown(
     """
-    <h2 style='text-align:center;'>
-    🏐️ Ballymore Supporters Draw  🏐
-    </h2>
+    <h3 style="text-align:center;">
+        🏐 Ballymore Supporters Draw 🏐
+    </h3>
     """,
     unsafe_allow_html=True
 )
