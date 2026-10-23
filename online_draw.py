@@ -18,6 +18,7 @@ st.set_page_config(
 )
 SHEET_ID = "1umG0zNs4Uz9IqfZXPXEeAgfSWoRTzDDsEwlSRC-3PnM"
 EMAIL_ENABLED = False
+APP_URL = st.secrets["APP_URL"]
 
 # --------------------------------------------------
 # CSS
@@ -164,6 +165,13 @@ if success == "true":
     session = stripe.checkout.Session.retrieve(
         session_id
     )
+
+    if session.payment_status != "paid":
+
+        st.error(
+            "Payment has not been completed."
+        )
+        st.stop()
     #This prevents duplicate entries on refresh 
     processed_ids = processed_sheet.col_values(1)
 
@@ -186,6 +194,7 @@ if success == "true":
     # EXTRACT METADATA
     # -----------------------------------------
     # Write Ticket_Entries
+    
     full_name = session.metadata["full_name"]
     mobile = session.metadata["mobile"]
     email = session.metadata["email"]
@@ -339,15 +348,17 @@ def create_checkout_session(
             "email": email,
             "quantity": str(quantity)
         },
-#https://YOUR-STREAMLIT-APP.streamlit.app (Use my app url for real event. localhost for testing only!
         success_url=(
-            "http://localhost:8501/"
+            f"{APP_URL}"
             "?success=true"
             "&session_id={CHECKOUT_SESSION_ID}"
         ),
-        cancel_url="http://localhost:8501/?cancelled=true",
-    )
 
+        cancel_url=(
+            f"{APP_URL}?cancelled=true"
+        ),
+
+    )
     return session.url
 
 # --------------------------------------------------
