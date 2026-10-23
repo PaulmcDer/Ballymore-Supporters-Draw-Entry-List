@@ -4,6 +4,8 @@ from google.oauth2.service_account import Credentials
 from datetime import datetime
 import pandas as pd
 import stripe
+#from email.message import EmailMessage
+#import smtplib
 
 # --------------------------------------------------
 # PAGE CONFIG
@@ -15,6 +17,8 @@ st.set_page_config(
     layout="centered"
 )
 SHEET_ID = "1umG0zNs4Uz9IqfZXPXEeAgfSWoRTzDDsEwlSRC-3PnM"
+EMAIL_ENABLED = False
+
 # --------------------------------------------------
 # CSS
 # --------------------------------------------------
@@ -69,6 +73,78 @@ ticket_count = len(records)
 
 stripe.api_key = st.secrets["STRIPE_SECRET_KEY"]
 
+# --------------------------------------------------
+# EMAIL CONFIRMATION
+# --------------------------------------------------
+
+def send_confirmation_email(
+    recipient,
+    full_name,
+    allocated_tickets
+):
+
+    msg = EmailMessage()
+
+    msg["Subject"] = (
+        "Ballymore Draw Ticket Confirmation"
+    )
+
+    msg["From"] = st.secrets["EMAIL_USER"]
+
+    msg["To"] = recipient
+
+    ticket_list = "\n".join(
+        allocated_tickets
+    )
+
+    msg.set_content(
+        f"""
+Thank you {full_name} for supporting Ballymore GFC.
+
+Your ticket numbers are:
+
+{ticket_list}
+
+Good luck in the draw.
+
+Ballymore Supporters Draw
+"""
+    )
+
+    try:
+
+        with smtplib.SMTP(
+            "smtp.gmail.com",
+            587,
+            timeout=10
+        ) as smtp:
+                
+            st.write("SMTP connection established")
+
+            smtp.ehlo()
+
+            smtp.starttls()
+
+            smtp.ehlo()
+
+            smtp.login(
+                st.secrets["EMAIL_USER"],
+                st.secrets["EMAIL_PASSWORD"]
+            )
+
+            st.write("Logged in. Sending email...")
+
+            smtp.send_message(msg)
+
+        st.success(
+            "Email sent successfully"
+        )
+
+    except Exception as e:
+
+        st.error(
+            f"Email failed: {e}"
+        )
 # --------------------------------------------------
 # STRIPE Sucess 
 # --------------------------------------------------
@@ -191,19 +267,10 @@ if success == "true":
     st.info(
         "Your tickets have been recorded and entered into the Ballymore Supporters Draw."
     )
-    
-    # -----------------------------------------
-    # MARK SESSION AS PROCESSED
-    # -----------------------------------------
-
-    processed_sheet.append_row(
-        [session_id]
-    )
 
     # -----------------------------------------
     # WRITE TICKETS TO GOOGLE SHEET
     # -----------------------------------------
-
     timestamp = datetime.now().strftime(
         "%d/%m/%Y %H:%M"
     )
@@ -221,6 +288,24 @@ if success == "true":
                 "Online Purchase"   # Comments
             ]
         )
+
+# -----------------------------------------
+# EMAIL TEMPORARILY DISABLED
+# -----------------------------------------
+
+# send_confirmation_email(
+#     email,
+#     full_name,
+#     allocated_tickets
+# )
+
+# -----------------------------------------
+# MARK SESSION AS PROCESSED
+# -----------------------------------------
+
+processed_sheet.append_row(
+    [session_id]
+)
 # --------------------------------------------------
 # STRIPE CHECKOUT SESSION
 # --------------------------------------------------
@@ -420,7 +505,7 @@ st.write(
 with st.form(
     "online_purchase_form",
     clear_on_submit=False
-    ):
+):
 
     full_name = st.text_input(
         "Full Name"
@@ -434,30 +519,38 @@ with st.form(
         "Email Address"
     )
 
-    st.markdown("### Purchase Summary")
+    col1, col2 = st.columns([1.3, 1])
 
-    st.write(
-        f"🎟️ Tickets: {quantity}"
-    )
+    with col1:
 
-    st.write(
-        f"💰 Total Cost: €{total_cost}"
-    )
+        st.markdown("### Purchase Summary")
 
-    st.write(
-        "🔢 Estimated Numbers:"
-    )
+        st.write(
+            f"🎟️ Tickets: {quantity}"
+        )
 
-    for ticket in estimated_tickets:
-        st.write(ticket)
+        st.write(
+            f"💰 Total Cost: €{total_cost}"
+        )
 
-    accept_terms = st.checkbox(
-        "I confirm I wish to purchase the selected tickets."
-    )
+        st.write(
+            "🔢 Estimated Numbers:"
+        )
 
-    submit = st.form_submit_button(
-        "💳 Continue To Payment"
-    )
+        for ticket in estimated_tickets:
+            st.write(ticket)
+
+    with col2:
+
+        st.markdown("### Confirm")
+
+        accept_terms = st.checkbox(
+            "I confirm I wish to purchase these tickets"
+        )
+
+        submit = st.form_submit_button(
+            "💳 Continue To Checkout"
+        )
 # --------------------------------------------------
 # PLACEHOLDER PAYMENT LOGIC
 # --------------------------------------------------
@@ -472,10 +565,6 @@ if submit:
         )
 
     elif not full_name.strip():
-
-        st.error(
-            "Please enter your full name."
-        )
 
         st.error(
             "Please enter your full name."
