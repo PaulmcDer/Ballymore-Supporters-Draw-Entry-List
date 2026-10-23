@@ -14,7 +14,7 @@ st.set_page_config(
     page_icon="🎟️",
     layout="centered"
 )
-
+SHEET_ID = "1umG0zNs4Uz9IqfZXPXEeAgfSWoRTzDDsEwlSRC-3PnM"
 # --------------------------------------------------
 # CSS
 # --------------------------------------------------
@@ -46,18 +46,6 @@ div[data-testid="stForm"] button * {
 """, unsafe_allow_html=True)
 
 # --------------------------------------------------
-# CONFIG
-# --------------------------------------------------
-
-SHEET_ID = "1umG0zNs4Uz9IqfZXPXEeAgfSWoRTzDDsEwlSRC-3PnM"
-
-st.set_page_config(
-    page_title="Supporters Monthly Draw Tickets",
-    page_icon="🏐",
-    layout="centered"
-)
-
-# --------------------------------------------------
 # GOOGLE SHEETS CONNECTION
 # --------------------------------------------------
 
@@ -74,6 +62,7 @@ creds = Credentials.from_service_account_info(
 client = gspread.authorize(creds)
 
 sheet = client.open_by_key(SHEET_ID).worksheet("Ticket_Entries")
+processed_sheet = client.open_by_key(SHEET_ID).worksheet("Processed_Stripe_Sessions")
 
 records = sheet.get_all_records()
 ticket_count = len(records)
@@ -84,26 +73,143 @@ stripe.api_key = st.secrets["STRIPE_SECRET_KEY"]
 # STRIPE Sucess 
 # --------------------------------------------------
 
-st.write("Stripe Connected ✅")
-
 success = st.query_params.get("success")
 session_id = st.query_params.get("session_id")
 
 if success == "true":
 
-    st.success(
-        "Payment Successful ✅"
-    )
-
     session = stripe.checkout.Session.retrieve(
         session_id
     )
+    #This prevents duplicate entries on refresh 
+    processed_ids = processed_sheet.col_values(1)
 
-    st.write("Session Metadata:")
+    if session_id in processed_ids:
 
-    st.write(
-        session.metadata
+        st.warning(
+            "This payment has already been processed."
+        )
+
+        st.stop()
+    quantity = int(
+        session.metadata["quantity"]
     )
+
+    # Allocate tickets
+    
+    # Show confirmation
+    
+    # -----------------------------------------
+    # EXTRACT METADATA
+    # -----------------------------------------
+    # Write Ticket_Entries
+    full_name = session.metadata["full_name"]
+    mobile = session.metadata["mobile"]
+    email = session.metadata["email"]
+
+    quantity = int(
+        session.metadata["quantity"]
+    )
+
+    # -----------------------------------------
+    # FIND NEXT WEB NUMBER
+    # -----------------------------------------
+
+    records = sheet.get_all_records()
+
+    web_numbers = []
+
+    for row in records:
+
+        ticket = str(
+            row.get("Ticket Number", "")
+        )
+
+        if ticket.startswith("WEB-"):
+
+            try:
+
+                web_numbers.append(
+                    int(
+                        ticket.replace(
+                            "WEB-",
+                            ""
+                        )
+                    )
+                )
+
+            except:
+                pass
+
+    next_ticket = max(
+        web_numbers,
+        default=0
+    ) + 1
+
+    # -----------------------------------------
+    # CREATE TICKETS
+    # -----------------------------------------
+
+    allocated_tickets = []
+
+    for i in range(quantity):
+
+        ticket_number = (
+            f"WEB-{next_ticket + i:03d}"
+        )
+
+        allocated_tickets.append(
+            ticket_number
+        )
+
+    # -----------------------------------------
+    # DISPLAY TICKETS
+    # -----------------------------------------
+    st.success(
+    "Payment Successful ✅"
+    )
+
+    st.subheader(
+        "Your Ticket Numbers"
+    )
+
+    for ticket in allocated_tickets:
+
+        st.write(ticket)
+
+    st.info(
+        "Your tickets have been recorded and entered into the Ballymore Supporters Draw."
+    )
+    
+    # -----------------------------------------
+    # MARK SESSION AS PROCESSED
+    # -----------------------------------------
+
+    processed_sheet.append_row(
+        [session_id]
+    )
+
+    # -----------------------------------------
+    # WRITE TICKETS TO GOOGLE SHEET
+    # -----------------------------------------
+
+    timestamp = datetime.now().strftime(
+        "%d/%m/%Y %H:%M"
+    )
+
+    for ticket in allocated_tickets:
+
+        sheet.append_row(
+            [
+                full_name,          # Name
+                "WEB",              # Seller Name
+                ticket,             # Ticket Number
+                mobile,             # Phone Number
+                "Paid",             # Paid
+                timestamp,          # Date Submitted
+                "Online Purchase"   # Comments
+            ]
+        )
 # --------------------------------------------------
 # STRIPE CHECKOUT SESSION
 # --------------------------------------------------
@@ -144,9 +250,6 @@ def create_checkout_session(
         ),
         cancel_url="http://localhost:8501/?cancelled=true",
     )
-
-    st.write("Metadata:")
-    st.write(session.metadata)
 
     return session.url
 
