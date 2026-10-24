@@ -1,0 +1,32 @@
+/* Global background */
+body {
+    background-color: #ffffff !important;
+}
+
+/* Sidebar background */
+[data-testid="stSidebar"] {
+    background-color: #f7f7f7 !important;
+}
+
+/* Buttons */
+.stButton>button {
+    background-color: #FFD300 !important;
+    color: #000 !important;
+    border-radius: 6px !important;
+    border: 1px solid #000 !important;
+    font-weight: 600 !important;
+}
+
+/* Inputs */
+input, textarea, select {
+    border: 1px solid #000 !important;
+}
+
+.card {
+    background: #FFF8C6;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #FFD300;
+    margin-bottom: 15px;
+}
+

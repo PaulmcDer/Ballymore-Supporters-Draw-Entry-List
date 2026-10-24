@@ -1,5 +1,12 @@
-*.json
-.streamlit/
+# Ignore ONLY secrets
+.streamlit/secrets.toml
+service_account.json
+
+# Allow everything else in .streamlit
+!.streamlit/style.css
+!.streamlit/config.toml
+
+# Python cache
 __pycache__/
 
 # Virtual environments
