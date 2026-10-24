@@ -269,9 +269,9 @@ if success == "true":
         "Your Ticket Numbers"
     )
 
-    for ticket in allocated_tickets:
-
-        st.code(ticket)
+    # Display ticket numbers WITH names
+    for i, ticket in enumerate(allocated_tickets):
+        st.code(f"{ticket} — {ticket_names[i]}")
 
     st.info(
         "Your tickets have been recorded and entered into the Ballymore Supporters Draw."
