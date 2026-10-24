@@ -116,6 +116,17 @@ div[data-testid="stForm"] button p {
 """, unsafe_allow_html=True)
 
 # --------------------------------------------------
+# Direct link to Online Ticket App
+# --------------------------------------------------
+
+st.markdown("#### Online Ticket Purchase")
+
+st.link_button(
+    "💳 Buy Tickets Online Instead",
+    "https://ballymore-supporters-draw-entry-list-dv6ewrazn6cbzzfgrd7jvc.streamlit.app/"
+)
+
+# --------------------------------------------------
 # FIND TOTAL WEB TICKET NUMBERS
 # --------------------------------------------------
 
