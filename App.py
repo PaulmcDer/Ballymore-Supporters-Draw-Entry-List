@@ -171,6 +171,22 @@ with st.sidebar:
 
     st.markdown("---")
 
+    st.markdown("""
+<div style="
+    background-color:#FFD700;
+    padding:14px 20px;
+    border-radius:10px;
+    border:2px solid #b8860b;
+    margin:20px 0;
+">
+    <span style="color:black; font-size:17px; font-style:italic;">
+        🛡️ This app is for Ballymore GAA ticket sellers and Authorised club members.
+    </span>
+</div>
+""", unsafe_allow_html=True)
+
+
+
 # --------------------------------------------------
 # Spilt for Tabs
 # --------------------------------------------------
