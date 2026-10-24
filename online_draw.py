@@ -4,8 +4,8 @@ from google.oauth2.service_account import Credentials
 from datetime import datetime
 import pandas as pd
 import stripe
-#from email.message import EmailMessage
-#import smtplib
+from email.message import EmailMessage
+import smtplib
 
 # --------------------------------------------------
 # PAGE CONFIG
@@ -17,7 +17,7 @@ st.set_page_config(
     layout="centered"
 )
 SHEET_ID = "1umG0zNs4Uz9IqfZXPXEeAgfSWoRTzDDsEwlSRC-3PnM"
-EMAIL_ENABLED = False
+DEBUG_EMAIL = False
 APP_URL = st.secrets["APP_URL"]
 
 # --------------------------------------------------
@@ -81,7 +81,8 @@ stripe.api_key = st.secrets["STRIPE_SECRET_KEY"]
 def send_confirmation_email(
     recipient,
     full_name,
-    allocated_tickets
+    allocated_tickets,
+    ticket_names
 ):
 
     msg = EmailMessage()
@@ -95,8 +96,10 @@ def send_confirmation_email(
     msg["To"] = recipient
 
     ticket_list = "\n".join(
-        allocated_tickets
+        f"{ticket} — {name}"
+        for ticket, name in zip(allocated_tickets, ticket_names)
     )
+
 
     msg.set_content(
         f"""
@@ -119,8 +122,10 @@ Ballymore Supporters Draw
             587,
             timeout=10
         ) as smtp:
-                
-            st.write("SMTP connection established")
+
+            if DEBUG_EMAIL:
+                st.write("SMTP connection established")
+                st.write("Logged in. Sending email...")
 
             smtp.ehlo()
 
@@ -132,8 +137,6 @@ Ballymore Supporters Draw
                 st.secrets["EMAIL_USER"],
                 st.secrets["EMAIL_PASSWORD"]
             )
-
-            st.write("Logged in. Sending email...")
 
             smtp.send_message(msg)
 
@@ -297,24 +300,20 @@ if success == "true":
                 "Online Purchase"   # Comments
             ]
         )
-
-# -----------------------------------------
-# EMAIL TEMPORARILY DISABLED
-# -----------------------------------------
-
-# send_confirmation_email(
-#     email,
-#     full_name,
-#     allocated_tickets
-# )
+    send_confirmation_email(
+        email,
+        full_name,
+        allocated_tickets,
+        ticket_names
+    )
 
 # -----------------------------------------
 # MARK SESSION AS PROCESSED
 # -----------------------------------------
 
-processed_sheet.append_row(
+    processed_sheet.append_row(
     [session_id]
-)
+    )
 # --------------------------------------------------
 # STRIPE CHECKOUT SESSION
 # --------------------------------------------------
@@ -576,38 +575,37 @@ if submit:
                     st.error(f"Please enter a name for Ticket {i+1}.")
                     st.stop()
 
-            st.success(
-                "Details accepted ✅"
-            )
+        st.success(
+        "Details accepted ✅")
 
-            st.markdown("### Payment Summary")
+        st.markdown("### Payment Summary")
 
-            st.write(f"👤 {full_name}")
-            st.write(f"📱 {mobile}")
-            st.write(f"📧 {email}")
-            st.write(f"🎟️ {quantity} ticket(s)")
-            st.write(f"💰 Total Due: €{total_cost}")
+        st.write(f"👤 {full_name}")
+        st.write(f"📱 {mobile}")
+        st.write(f"📧 {email}")
+        st.write(f"🎟️ {quantity} ticket(s)")
+        st.write(f"💰 Total Due: €{total_cost}")
 
-            st.markdown("---")
+        st.markdown("---")
 
-            st.session_state["buyer_name"] = full_name
-            st.session_state["buyer_mobile"] = mobile
-            st.session_state["buyer_email"] = email
-            st.session_state["buyer_quantity"] = quantity
+        st.session_state["buyer_name"] = full_name
+        st.session_state["buyer_mobile"] = mobile
+        st.session_state["buyer_email"] = email
+        st.session_state["buyer_quantity"] = quantity
 
-            checkout_url = create_checkout_session(
-                total_cost,
-                full_name,
-                mobile,
-                email,
-                quantity,
-                ticket_names #new
-            )
+        checkout_url = create_checkout_session(
+            total_cost,
+            full_name,
+            mobile,
+            email,
+            quantity,
+            ticket_names #new
+        )
 
-            st.link_button(
-                f"💳 Continue to Stripe (€{total_cost})",
-                checkout_url
-            )
+        st.link_button(
+            f"💳 Continue to Stripe (€{total_cost})",
+            checkout_url
+        )
 
 # --------------------------------------------------
 # FOOTER
