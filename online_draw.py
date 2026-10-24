@@ -7,6 +7,18 @@ import stripe
 from email.message import EmailMessage
 import smtplib
 
+with open(".streamlit/style.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div style="background:#FFD300;padding:6px 10px;border-radius:4px;margin-bottom:15px;text-align:center;">
+        <span style="color:#000;font-weight:600;font-size:17px;">
+            Ballymore Supporters Draw — Online Ticket Purchase
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
+
+
 # --------------------------------------------------
 # PAGE CONFIG
 # --------------------------------------------------
