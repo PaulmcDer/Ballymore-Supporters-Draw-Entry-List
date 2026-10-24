@@ -37,7 +37,6 @@ sheet = client.open_by_key(SHEET_ID).worksheet("Ticket_Entries")
 
 records = sheet.get_all_records()
 ticket_count = len(records)
-
 # --------------------------------------------------
 # CSS STYLE For Buttons
 # --------------------------------------------------
@@ -115,6 +114,51 @@ div[data-testid="stForm"] button p {
 }
 </style>
 """, unsafe_allow_html=True)
+
+# --------------------------------------------------
+# FIND TOTAL WEB TICKET NUMBERS
+# --------------------------------------------------
+
+web_numbers = []
+
+for row in records:
+
+    ticket = str(
+        row.get("Ticket Number", "")
+    )
+
+    if ticket.startswith("WEB-"):
+
+        try:
+            web_numbers.append(
+                int(
+                    ticket.replace(
+                        "WEB-",
+                        ""
+                    )
+                )
+            )
+        except:
+            pass
+
+next_web_ticket = max(
+    web_numbers,
+    default=0
+) 
+
+online_ticket_count = len(web_numbers)
+
+# --------------------------------------------------
+# SIDEBAR CONTENT
+# --------------------------------------------------
+with st.sidebar:
+    
+    st.subheader("Ballymore GAA Draw Information")
+
+    st.metric("Total Online Tickets Purchased", online_ticket_count)
+    st.metric("Total Ticket Count", ticket_count)
+
+    st.markdown("---")
 
 # --------------------------------------------------
 # Spilt for Tabs
@@ -509,9 +553,7 @@ with tab3:
     st.write("💳 Pay with Revolut")
 
     st.markdown("""
-    🎟️ **1 Ticket €100** | ✅ 12 Monthly Draws
-
-    Monthly prizes | 🥇 €1,000 | 🥈 €100 | 🥉 €100
+    🎟️ **1 Ticket €100** | ✅ 12 Monthly Draws |  Monthly prizes, 🥇 €1,000 🥈 €100 🥉 €100
     """)
 
     st.link_button(
