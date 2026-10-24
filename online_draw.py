@@ -184,6 +184,7 @@ if success == "true":
     quantity = int(
         session.metadata["quantity"]
     )
+    ticket_names = session.metadata["ticket_names"].split("|")
 
     # Allocate tickets
     
@@ -283,11 +284,11 @@ if success == "true":
         "%d/%m/%Y %H:%M"
     )
 
-    for ticket in allocated_tickets:
+    for i, ticket in enumerate(allocated_tickets):
 
         sheet.append_row(
             [
-                full_name,          # Name
+                ticket_names[i],    # Name for this ticket
                 "WEB",              # Seller Name
                 ticket,             # Ticket Number
                 mobile,             # Phone Number
@@ -323,7 +324,8 @@ def create_checkout_session(
     full_name,
     mobile,
     email,
-    quantity
+    quantity,
+    ticket_names
 ):
 
     session = stripe.checkout.Session.create(
@@ -345,7 +347,9 @@ def create_checkout_session(
             "full_name": full_name,
             "mobile": mobile,
             "email": email,
-            "quantity": str(quantity)
+            "quantity": str(quantity),
+            "ticket_names": "|".join(ticket_names)
+
         },
         success_url=(
             f"{APP_URL}"
@@ -394,95 +398,50 @@ next_web_ticket = max(
 online_ticket_count = len(web_numbers)
 
 # --------------------------------------------------
+# SIDEBAR CONTENT
+# --------------------------------------------------
+with st.sidebar:
+    st.subheader("Ballymore GAA Draw Information")
+
+    st.metric("Total Online Tickets Purchased", online_ticket_count)
+    st.metric("Total Ticket Count", ticket_count)
+    st.metric("Next Online Ticket Number Available", f"WEB-{next_web_ticket:03d}")
+
+    col1, col2 = st.columns([2, 1.5])
+
+    with col1:
+        st.markdown("💳 **1 Ticket €100**<br>✅ 12 Monthly Draws", unsafe_allow_html=True)
+        
+    st.markdown("---")
+    
+    with col2:
+        st.markdown("Monthly prizes<br>🥇 €1,000<br>🥈 €100<br>🥉 €100", unsafe_allow_html=True)
+
+    st.markdown("---")
+
+# --------------------------------------------------
 # HEADER
 # --------------------------------------------------
 
-col1, col2, col3 = st.columns([1, 0.7, 1])
+col1, col2, col3 = st.columns([2, 1.5, 2])
 
 with col2:
     st.image(
         "logo.png",
-        width=135
+        width=160
     )
 
-st.markdown(
-    """
-    <h3 style="text-align:center;">
-        🏐 Ballymore Supporters Draw 🏐
-    </h3>
-    """,
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    """
-    <p style='text-align:center; font-size:14px;'>
-    <i>
-    Complete your details below to purchase Draw Tickets.
-    </i>
-    </p>
-    """,
-    unsafe_allow_html=True
-)
-
-col1, col2, col3 = st.columns(3)
-
-with col1:
     st.metric(
-        "Tickets Entered",
-        ticket_count
+    "Live Ticket Count",
+    ticket_count
     )
 
-with col2:
-    st.metric(
-        "Online Tickets",
-        online_ticket_count
-    )
+st.write("🏐 Supporters Monthly Draw Tickets 🏐")
 
-with col3:
-    st.metric(
-        "Next Ticket",
-        f"WEB-{next_web_ticket:03d}"
-    )
+st.caption("***Select your tickets, enter the holder’s details, and complete the secure Stripe payment.”***")
 
 st.markdown("---")
 
-# --------------------------------------------------
-# DRAW DETAILS
-# --------------------------------------------------
-col1, col2 = st.columns(2)
-
-with col1:
-
-    st.markdown("""
-    ### 🎟️ Draw Details
-
-    🎟️ **1 Ticket €100**
-
-    ✅ Entry into 12 monthly draws
-
-    🥇 **1st Prize:** €1,000
-
-    🥈 **2nd Prize:** €100
-
-    🥉 **3rd Prize:** €100
-    """)
-
-with col2:
-
-    st.markdown("""
-    ### ✅ Benefits
-
-    ✅ Secure online purchase
-
-    ✅ Instant ticket allocation
-
-    ✅ Up to 5 tickets per transaction
-
-    ✅ Supports Ballymore GFC
-
-    ✅ 12 chances to win each year
-    """)
 #--------------------------------------------------
 #Ticket Calculation
 #--------------------------------------------------
@@ -527,7 +486,23 @@ with st.form(
 
     email = st.text_input(
         "Email Address"
-    )
+    )  
+    # --------------------------------------------------
+    # Ticket Holder Names (must be BEFORE the form)
+    # --------------------------------------------------
+
+    st.write("Ticket Holder Names")
+
+    use_primary_name = st.checkbox("Use primary name for all tickets")
+
+    ticket_names = []
+
+    if use_primary_name:
+        ticket_names = [full_name] * quantity  # full_name defined later but safe
+    else:
+        for i in range(quantity):
+            name = st.text_input(f"Name for Ticket {i+1}", key=f"ticket_name_{i}")
+            ticket_names.append(name)
 
     col1, col2 = st.columns([1.3, 1])
 
@@ -594,37 +569,45 @@ if submit:
 
     else:
 
-        st.success(
-            "Details accepted ✅"
-        )
+        # Validate ticket names
+        if not use_primary_name:
+            for i, name in enumerate(ticket_names):
+                if not name.strip():
+                    st.error(f"Please enter a name for Ticket {i+1}.")
+                    st.stop()
 
-        st.markdown("### Payment Summary")
+            st.success(
+                "Details accepted ✅"
+            )
 
-        st.write(f"👤 {full_name}")
-        st.write(f"📱 {mobile}")
-        st.write(f"📧 {email}")
-        st.write(f"🎟️ {quantity} ticket(s)")
-        st.write(f"💰 Total Due: €{total_cost}")
+            st.markdown("### Payment Summary")
 
-        st.markdown("---")
+            st.write(f"👤 {full_name}")
+            st.write(f"📱 {mobile}")
+            st.write(f"📧 {email}")
+            st.write(f"🎟️ {quantity} ticket(s)")
+            st.write(f"💰 Total Due: €{total_cost}")
 
-        st.session_state["buyer_name"] = full_name
-        st.session_state["buyer_mobile"] = mobile
-        st.session_state["buyer_email"] = email
-        st.session_state["buyer_quantity"] = quantity
+            st.markdown("---")
 
-        checkout_url = create_checkout_session(
-            total_cost,
-            full_name,
-            mobile,
-            email,
-            quantity
-        )
+            st.session_state["buyer_name"] = full_name
+            st.session_state["buyer_mobile"] = mobile
+            st.session_state["buyer_email"] = email
+            st.session_state["buyer_quantity"] = quantity
 
-        st.link_button(
-            f"💳 Continue to Stripe (€{total_cost})",
-            checkout_url
-        )
+            checkout_url = create_checkout_session(
+                total_cost,
+                full_name,
+                mobile,
+                email,
+                quantity,
+                ticket_names #new
+            )
+
+            st.link_button(
+                f"💳 Continue to Stripe (€{total_cost})",
+                checkout_url
+            )
 
 # --------------------------------------------------
 # FOOTER
