@@ -48,13 +48,12 @@ st.markdown(f"""
 # -------------------------------
 with open(".streamlit/style.css") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-
 # -------------------------------
 # COMPACT CENTRED BANNER & UI CARDS
 # -------------------------------
 st.markdown("""
 <div style="background:#FFD300;padding:6px 10px;border-radius:4px;margin-bottom:15px;text-align:center;">
-    <span style="color:#000;font-weight:600;font-size:17px;">
+    <span style="color:#000;font-weight:500;font-size:17px;font-style:italic;font-family: 'Georgia', serif;">
         🏐 Ballymore Supporters Draw - Sellers Online Entry 🏐
     </span>
 </div>
@@ -371,7 +370,10 @@ with tab1:
     border-radius:10px;
     border:2px solid #FFD700;
     text-align:center;
+    font-style: italic;
+    font-family: 'Georgia', serif;
     font-weight:500;
+    font-size: 15px;
 ">
     🔑 Enter Seller PIN to enable ticket entry and for viewing seller tickets.
 </div>
