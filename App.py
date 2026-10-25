@@ -62,7 +62,7 @@ st.markdown("""
 
 
 # --------------------------------------------------
-# GOOGLE SHEETS CONNECTION
+# GOOGLE SHEETS CONNECTION & CACHE ALL RECORDS
 # --------------------------------------------------
 
 scope = [
@@ -70,16 +70,34 @@ scope = [
     "https://www.googleapis.com/auth/drive"
 ]
 
-creds = Credentials.from_service_account_info(
-    st.secrets["gcp_service_account"],
-    scopes=scope
-)
+@st.cache_resource
+def get_client():
 
-client = gspread.authorize(creds)
+    creds = Credentials.from_service_account_info(
+        st.secrets["gcp_service_account"],
+        scopes=scope
+    )
 
-sheet = client.open_by_key(SHEET_ID).worksheet("Ticket_Entries")
+    return gspread.authorize(creds)
 
-records = sheet.get_all_records()
+client = get_client()
+
+sheet = client.open_by_key(
+    SHEET_ID
+).worksheet("Ticket_Entries")
+
+@st.cache_data(ttl=60)
+def get_records():
+    return sheet.get_all_records()
+
+@st.cache_data(ttl=60)
+def get_phone_numbers():
+    return [
+        str(x).strip().replace(" ", "")
+        for x in sheet.col_values(4)[1:]
+    ]
+
+records = get_records()
 ticket_count = len(records)
 # --------------------------------------------------
 # CSS STYLE For Buttons
@@ -255,10 +273,10 @@ with st.sidebar:
     st.markdown("<br>", unsafe_allow_html=True)
 
     # Centred button
-    col1, col2, col3 = st.columns([0.1,5,0.1])
+    col1, col2, col3 = st.columns([0.03,5,0.02])
     with col2:
         st.link_button(
-            "💳 Buy Tickets Online Instead",
+            "💳 Buy Tickets Online - Click Here",
             "https://ballymore-supporters-draw-entry-list-dv6ewrazn6cbzzfgrd7jvc.streamlit.app/"
         )
 # --------------------------------------------------
@@ -474,10 +492,7 @@ with tab1:
             if not ticket.upper().startswith("T"):
                 ticket = f"T{ticket}"
 
-            existing_phones = [
-                str(x).strip().replace(" ", "")
-                for x in sheet.col_values(4)[1:]
-            ]
+            existing_phones = get_phone_numbers()
 
             phone_check = phone
 
@@ -504,8 +519,11 @@ with tab1:
                         comments
                     ]
                 )
+                get_records.clear()
+                get_phone_numbers.clear()
                 st.session_state.reset_form = True
                 st.session_state.show_success = True
+                
                 
                 st.rerun()
 # --------------------------------------------------
@@ -530,7 +548,7 @@ with tab1:
             st.warning("Please enter a seller name.")
         else:
 
-            records = sheet.get_all_records()
+            records = get_records()
 
             results = []
 
@@ -701,7 +719,7 @@ with tab4:
 
         if admin_pin == st.secrets["ADMIN_PIN"]:
 
-            records = sheet.get_all_records()
+            records = get_records()
             records.reverse()
 
             results = []
