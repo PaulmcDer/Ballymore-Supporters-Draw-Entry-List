@@ -273,7 +273,7 @@ with st.sidebar:
     st.markdown("<br>", unsafe_allow_html=True)
 
     st.link_button(
-        "💳 To Buy Tickets Online -- Click Here",
+        " 💳   To Buy Tickets Online -- Click Here",
         "https://ballymore-supporters-draw-entry-list-dv6ewrazn6cbzzfgrd7jvc.streamlit.app/"
      )
 # --------------------------------------------------
