@@ -263,7 +263,7 @@ with st.sidebar:
         background:#FFD700;
         padding:15px;
         border-radius:10px;
-        border:2px solid #b8860b;
+        border:3px solid #b8860b;
         text-align:center;">
         🛡️ This app is for Ballymore GAA ticket sellers and Authorised club members.
     </div>
@@ -272,7 +272,7 @@ with st.sidebar:
     st.markdown("<br>", unsafe_allow_html=True)
 
     st.link_button(
-        " 💳   To Buy Tickets Online -- Click Here",
+        " 💳 Get Ballymore Draw Tickets Online 💳",
         "https://ballymore-supporters-draw-entry-list-dv6ewrazn6cbzzfgrd7jvc.streamlit.app/"
      )
 # --------------------------------------------------
