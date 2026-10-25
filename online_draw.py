@@ -546,7 +546,7 @@ st.markdown("""
     border:2px solid #FFD700;
     text-align:center;
 ">
-    🎟 Select your tickets, enter the holder's details and complete the secure Stripe payment.
+    🎟 Select your tickets, enter your details and complete the secure Stripe payment.
 </div>
 """, unsafe_allow_html=True)
 
