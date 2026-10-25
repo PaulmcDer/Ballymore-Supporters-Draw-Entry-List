@@ -1,14 +1,28 @@
+# ==================================================
+# IMPORTS
+# ==================================================
+#1. Imports
+#2. Settings / Constants
+#3. Connections (Google / Stripe)
+#4. Functions
+#5. Load Data
+#6. Process Payment Return
+#7. Display UI
+#8. Validate Form
+#9. Redirect to Stripe
+
 import streamlit as st
-import gspread
-from google.oauth2.service_account import Credentials
-from datetime import datetime
-import pandas as pd
 import stripe
-from email.message import EmailMessage
+import gspread
 import smtplib
-# --------------------------------------------------
-# PAGE CONFIG
-# --------------------------------------------------
+
+from datetime import datetime
+from email.message import EmailMessage
+from google.oauth2.service_account import Credentials
+
+# ==================================================
+# PAGE SETUP
+# ==================================================
 
 st.set_page_config(
     page_title="Ballymore Draw Online",
@@ -16,29 +30,30 @@ st.set_page_config(
     layout="centered"
 )
 st.logo("logo.png")
-
-with open(".streamlit/style.css") as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
     
-    st.markdown("""
-    <div style="background:#FFD300;padding:6px 10px;border-radius:4px;margin-bottom:15px;text-align:center;">
-        <span style="color:#000;font-weight:600;font-size:17px;">
-            🏐 Ballymore Supporters Draw — Online Ticket Purchase 🏐
-        </span>
-    </div>
-    """, unsafe_allow_html=True)
+st.markdown("""
+<div style="background:#FFD300;padding:6px 10px;border-radius:4px;margin-bottom:15px;text-align:center;">
+     <span style="color:#000;font-weight:600;font-size:17px;">
+        🏐 Ballymore Supporters Draw — Online Ticket Purchase 🏐
+    </span>
+</div>
+""", unsafe_allow_html=True)
 
-# --------------------------------------------------
-# DECLARE
-# --------------------------------------------------
+# ==================================================
+# APP SETTINGS / CONSTANTS
+# ==================================================
 
 SHEET_ID = "1umG0zNs4Uz9IqfZXPXEeAgfSWoRTzDDsEwlSRC-3PnM"
 DEBUG_EMAIL = False
 APP_URL = st.secrets["APP_URL"]
+stripe.api_key = st.secrets["STRIPE_SECRET_KEY"]
 
-# --------------------------------------------------
-# CSS
-# --------------------------------------------------
+# ==================================================
+# CUSTOM STYLES
+# ==================================================
+
+with open(".streamlit/style.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 st.markdown("""
 <style>
@@ -121,6 +136,10 @@ client = gspread.authorize(creds)
 sheet = client.open_by_key(SHEET_ID).worksheet("Ticket_Entries")
 processed_sheet = client.open_by_key(SHEET_ID).worksheet("Processed_Stripe_Sessions")
 
+# ==================================================
+# GOOGLE SHEET FUNCTIONS
+# ==================================================
+
 @st.cache_data(ttl=60)
 def get_records():
     return sheet.get_all_records()
@@ -129,14 +148,16 @@ def get_records():
 def get_processed_ids():
     return processed_sheet.col_values(1)
 
+# ==================================================
+# LOAD DATA
+# ==================================================
+
 records = get_records()
 ticket_count = len(records)
 
-stripe.api_key = st.secrets["STRIPE_SECRET_KEY"]
-
-# --------------------------------------------------
-# EMAIL CONFIRMATION
-# --------------------------------------------------
+# ==================================================
+# EMAIL FUNCTIONS
+# ==================================================
 
 def send_confirmation_email(
     recipient,
@@ -209,9 +230,9 @@ Ballymore Supporters Draw
         st.error(
             f"Email failed: {e}"
         )
-# --------------------------------------------------
-# STRIPE Sucess 
-# --------------------------------------------------
+# ==================================================
+# STRIPE FUNCTIONS & STRIPE SUCCESS
+# ==================================================
 
 success = st.query_params.get("success")
 session_id = st.query_params.get("session_id")
@@ -267,7 +288,7 @@ if success == "true":
     )
 
     # -----------------------------------------
-    # FIND NEXT WEB NUMBER
+    # HELPER FUNCTIONS
     # -----------------------------------------
 
     records = get_records()
@@ -556,9 +577,9 @@ st.write(
     f"🎟 Reserved Ticket Numbers: {len(estimated_tickets)}"
 )
 
-# --------------------------------------------------
-# PURCHASE FORM / INFO BEFORE FORM
-# --------------------------------------------------
+# ==================================================
+# TICKET HOLDER NAMES
+# ==================================================
 
 st.write("Ticket Holder Names")
 
@@ -567,9 +588,9 @@ use_primary_name = st.checkbox(
     value=True
 )
 
-# --------------------------------------------------
-# PURCHASE FORM SECTION START
-# --------------------------------------------------
+# ==================================================
+# PURCHASE FORM
+# ==================================================
         
 with st.form(
     "online_purchase_form",
@@ -591,18 +612,6 @@ with st.form(
     ticket_names = []
 
     if use_primary_name:
-
-        if full_name.strip():
-
-            st.success(
-                f"✅ All {quantity} ticket(s) will be assigned to: {full_name}"
-            )
-
-        else:
-
-            st.info(
-                "Enter your Full Name above."
-            )
 
         ticket_names = [full_name] * quantity
 
