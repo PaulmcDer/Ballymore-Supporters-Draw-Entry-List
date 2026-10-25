@@ -6,19 +6,6 @@ import pandas as pd
 import stripe
 from email.message import EmailMessage
 import smtplib
-
-with open(".streamlit/style.css") as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div style="background:#FFD300;padding:6px 10px;border-radius:4px;margin-bottom:15px;text-align:center;">
-        <span style="color:#000;font-weight:600;font-size:17px;">
-            Ballymore Supporters Draw — Online Ticket Purchase
-        </span>
-    </div>
-    """, unsafe_allow_html=True)
-
-
 # --------------------------------------------------
 # PAGE CONFIG
 # --------------------------------------------------
@@ -28,6 +15,23 @@ st.set_page_config(
     page_icon="🎟️",
     layout="centered"
 )
+st.logo("logo.png")
+
+with open(".streamlit/style.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div style="background:#FFD300;padding:6px 10px;border-radius:4px;margin-bottom:15px;text-align:center;">
+        <span style="color:#000;font-weight:600;font-size:17px;">
+            🏐 Ballymore Supporters Draw — Online Ticket Purchase 🏐
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
+
+# --------------------------------------------------
+# DECLARE
+# --------------------------------------------------
+
 SHEET_ID = "1umG0zNs4Uz9IqfZXPXEeAgfSWoRTzDDsEwlSRC-3PnM"
 DEBUG_EMAIL = False
 APP_URL = st.secrets["APP_URL"]
@@ -288,9 +292,18 @@ if success == "true":
     for i, ticket in enumerate(allocated_tickets):
         st.code(f"{ticket} — {ticket_names[i]}")
 
-    st.info(
-        "Your tickets have been recorded and entered into the Ballymore Supporters Draw."
-    )
+    st.markdown("""
+<div style="
+    background:#FFF8CC;
+    color:black;
+    padding:12px;
+    border-radius:10px;
+    border-left:5px solid #FFD700;
+">
+    ✅ Your tickets have been recorded and entered into the Ballymore Supporters Draw.
+</div>
+""", unsafe_allow_html=True)
+
 
     # -----------------------------------------
     # WRITE TICKETS TO GOOGLE SHEET
@@ -412,44 +425,53 @@ online_ticket_count = len(web_numbers)
 # SIDEBAR CONTENT
 # --------------------------------------------------
 with st.sidebar:
-    st.subheader("Ballymore GAA Draw Information")
 
+    col1, col2, col3 = st.columns([1,2,1])
+
+    with col2:
+        st.image("logo.png", width=120)
+
+    st.markdown(
+        "<h3 style='text-align:center;'>Ballymore GAA Draw Information</h3>",
+        unsafe_allow_html=True
+    )
     st.metric("Total Online Tickets Purchased", online_ticket_count)
     st.metric("Total Ticket Count", ticket_count)
     st.metric("Next Online Ticket Number Available", f"WEB-{next_web_ticket:03d}")
-
-    col1, col2 = st.columns([2, 1.5])
-
-    with col1:
-        st.markdown("💳 **1 Ticket €100**<br>✅ 12 Monthly Draws", unsafe_allow_html=True)
         
     st.markdown("---")
     
-    with col2:
-        st.markdown("Monthly prizes<br>🥇 €1,000<br>🥈 €100<br>🥉 €100", unsafe_allow_html=True)
-
+    st.markdown("""
+<div style="
+    background:#FFD700;
+    padding:15px;
+    border-radius:10px;
+    border:2px solid #b8860b;
+    text-align:center;
+    color:black;
+">
+    💳 1 Ticket €100<br>
+    ✅ 12 Monthly Draws<br>
+    🥇 €1,000 &nbsp; 🥈 €100 &nbsp; 🥉 €100
+</div>
+""", unsafe_allow_html=True)
     st.markdown("---")
 
 # --------------------------------------------------
 # HEADER
 # --------------------------------------------------
-
-col1, col2, col3 = st.columns([2, 1.5, 2])
-
-with col2:
-    st.image(
-        "logo.png",
-        width=160
-    )
-
-    st.metric(
-    "Live Ticket Count",
-    ticket_count
-    )
-
-st.write("🏐 Supporters Monthly Draw Tickets 🏐")
-
-st.caption("***Select your tickets, enter the holder’s details, and complete the secure Stripe payment.”***")
+st.markdown("""
+<div style="
+    background:#FFF8CC;
+    color:black;
+    padding:12px;
+    border-radius:10px;
+    border:2px solid #FFD700;
+    text-align:center;
+">
+    🎟 Select your tickets, enter the holder's details and complete the secure Stripe payment.
+</div>
+""", unsafe_allow_html=True)
 
 st.markdown("---")
 
