@@ -5,6 +5,44 @@ from google.oauth2.service_account import Credentials
 from datetime import datetime
 #from streamlit_extras.metric_cards import style_metric_cards
 
+# --------------------------------------------------
+# CONFIG
+# --------------------------------------------------
+
+SHEET_ID = "1umG0zNs4Uz9IqfZXPXEeAgfSWoRTzDDsEwlSRC-3PnM"
+
+st.set_page_config(
+    page_title="Supporters Monthly Draw Tickets",
+    page_icon="🏐",
+    layout="centered"
+)
+st.logo("logo.png")
+import base64
+
+def get_base64_logo():
+    with open("logo.png", "rb") as f:
+        return base64.b64encode(f.read()).decode()
+
+logo = get_base64_logo()
+
+st.markdown(f"""
+<style>
+.logo-container {{
+    position: fixed;
+    top: 6px;
+    left: 45px;
+    z-index: 9999;
+}}
+
+.logo-container img {{
+    height: 34px;
+}}
+</style>
+
+<div class="logo-container">
+    <img src="data:image/png;base64,{logo}">
+</div>
+""", unsafe_allow_html=True)
 # -------------------------------
 # LOAD GLOBAL CSS
 # -------------------------------
@@ -17,22 +55,11 @@ with open(".streamlit/style.css") as f:
 st.markdown("""
 <div style="background:#FFD300;padding:6px 10px;border-radius:4px;margin-bottom:15px;text-align:center;">
     <span style="color:#000;font-weight:600;font-size:17px;">
-        Ballymore Supporters Draw - Sellers Online Entry
+        🏐 Ballymore Supporters Draw - Sellers Online Entry 🏐
     </span>
 </div>
 """, unsafe_allow_html=True)
 
-# --------------------------------------------------
-# CONFIG
-# --------------------------------------------------
-
-SHEET_ID = "1umG0zNs4Uz9IqfZXPXEeAgfSWoRTzDDsEwlSRC-3PnM"
-
-st.set_page_config(
-    page_title="Supporters Monthly Draw Tickets",
-    page_icon="🏐",
-    layout="centered"
-)
 
 # --------------------------------------------------
 # GOOGLE SHEETS CONNECTION
@@ -133,15 +160,6 @@ div[data-testid="stForm"] button p {
 """, unsafe_allow_html=True)
 
 # --------------------------------------------------
-# Direct link to Online Ticket App
-# --------------------------------------------------
-
-st.link_button(
-    "💳 Buy Tickets Online Instead",
-    "https://ballymore-supporters-draw-entry-list-dv6ewrazn6cbzzfgrd7jvc.streamlit.app/"
-)
-
-# --------------------------------------------------
 # FIND TOTAL WEB TICKET NUMBERS
 # --------------------------------------------------
 
@@ -173,35 +191,47 @@ next_web_ticket = max(
 ) 
 
 online_ticket_count = len(web_numbers)
-
 # --------------------------------------------------
 # SIDEBAR CONTENT
 # --------------------------------------------------
 with st.sidebar:
-    
-    st.subheader("Ballymore GAA Draw Information")
 
-    st.metric("Total Online Tickets Purchased", online_ticket_count)
-    st.metric("Total Ticket Count", ticket_count)
+    # Logo
+    col1, col2, col3 = st.columns([2,3,2])
+    with col2:
+        st.image("logo.png", width=120)
+
+    st.markdown(
+        "<h3 style='text-align:center;'>Ballymore GAA Draw Information</h3>",
+        unsafe_allow_html=True
+    )
+
+    st.metric("🎟 Total Online Tickets Purchased", online_ticket_count)
+    st.metric("🎟 Total Ticket Count", ticket_count)
 
     st.markdown("---")
 
+    # Yellow notice
     st.markdown("""
-<div style="
-    background-color:#FFD700;
-    padding:14px 20px;
-    border-radius:10px;
-    border:2px solid #b8860b;
-    margin:20px 0;
-">
-    <span style="color:black; font-size:17px; font-style:italic;">
+    <div style="
+        background:#FFD700;
+        padding:15px;
+        border-radius:10px;
+        border:2px solid #b8860b;
+        text-align:center;">
         🛡️ This app is for Ballymore GAA ticket sellers and Authorised club members.
-    </span>
-</div>
-""", unsafe_allow_html=True)
+    </div>
+    """, unsafe_allow_html=True)
 
+    st.markdown("<br>", unsafe_allow_html=True)
 
-
+    # Centred button
+    col1, col2, col3 = st.columns([0.1,5,0.1])
+    with col2:
+        st.link_button(
+            "💳 Buy Tickets Online Instead",
+            "https://ballymore-supporters-draw-entry-list-dv6ewrazn6cbzzfgrd7jvc.streamlit.app/"
+        )
 # --------------------------------------------------
 # Spilt for Tabs
 # --------------------------------------------------
@@ -230,20 +260,6 @@ if "seller_pin_ok" not in st.session_state:
 # PAGE
 # --------------------------------------------------
 with tab1:
-    
-    col1, col2, col3 = st.columns([2, 1.5, 2])
-
-    with col2:
-        st.image(
-            "logo.png",
-            width=160
-        )
-
-        st.metric(
-            "🎟 Tickets Entered This Year",
-            ticket_count
-        )
-    st.write("🏐 Supporters Monthly Draw Tickets 🏐")
 
     st.caption("**Please enter the ticket holder's details below and click Submit Entry when complete**")
         
@@ -252,7 +268,7 @@ with tab1:
         st.session_state.name = ""
 
     if "phone" not in st.session_state:
-        st.session_state.phone = ""
+            st.session_state.phone = ""
 
     if "ticket" not in st.session_state:
         st.session_state.ticket = ""
@@ -267,7 +283,7 @@ with tab1:
         st.session_state.paid = "Not Paid"
 
     if "show_success" not in st.session_state:
-        st.session_state.show_success = False
+         st.session_state.show_success = False
 
     if "reset_form" not in st.session_state:
         st.session_state.reset_form = False
@@ -304,9 +320,21 @@ with tab1:
         st.error("Incorrect PIN")
 
     if not st.session_state.seller_pin_ok:
-        st.info(
-            "Enter Seller PIN to enable ticket entry and viewing seller tickets."
-        )
+        
+        #This is html which allows colour options#
+        st.markdown("""
+<div style="
+    background:#FFF8CC;
+    color:black;
+    padding:14px;
+    border-radius:10px;
+    border:2px solid #FFD700;
+    text-align:center;
+    font-weight:500;
+">
+    🔑 Enter Seller PIN to enable ticket entry and viewing seller tickets.
+</div>
+""", unsafe_allow_html=True)
 # --------------------------------------------------
 # FORM
 # --------------------------------------------------
@@ -594,10 +622,6 @@ with tab3:
 
     st.write("💳 Pay with Revolut")
 
-    st.markdown("""
-    🎟️ **1 Ticket €100** | ✅ 12 Monthly Draws |  Monthly prizes, 🥇 €1,000 🥈 €100 🥉 €100
-    """)
-
     st.link_button(
         "💳 Pay with Revolut",
         st.secrets["REVOLUT_LINK"]
@@ -605,7 +629,7 @@ with tab3:
 
     st.markdown("---")
 
-    col1, col2 = st.columns([1, 1])
+    col1, col2 = st.columns([1.2, 1])
 
     with col1:
         st.image(
