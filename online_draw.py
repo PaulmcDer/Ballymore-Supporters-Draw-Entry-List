@@ -71,8 +71,27 @@ div[data-testid="stForm"] button * {
     padding: 10px;
 }
 
-section[data-testid="stSidebar"] {
-    background-color: #F9F9F9;
+[data-testid="stMetric"] {
+    text-align: center;
+    background-color: #FFF8CC;
+    border: 1px solid #FFD700;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+/* Metric label */
+[data-testid="stMetricLabel"] {
+    color: #000000 !important;
+}
+
+/* Metric value */
+[data-testid="stMetricValue"] {
+    color: #000000 !important;
+}
+
+/* Any text inside metric */
+[data-testid="stMetric"] * {
+    color: #000000 !important;
 }
 
 .stButton > button:hover,
@@ -102,7 +121,15 @@ client = gspread.authorize(creds)
 sheet = client.open_by_key(SHEET_ID).worksheet("Ticket_Entries")
 processed_sheet = client.open_by_key(SHEET_ID).worksheet("Processed_Stripe_Sessions")
 
-records = sheet.get_all_records()
+@st.cache_data(ttl=60)
+def get_records():
+    return sheet.get_all_records()
+
+@st.cache_data(ttl=60)
+def get_processed_ids():
+    return processed_sheet.col_values(1)
+
+records = get_records()
 ticket_count = len(records)
 
 stripe.api_key = st.secrets["STRIPE_SECRET_KEY"]
@@ -209,7 +236,7 @@ if success == "true":
         )
         st.stop()
     #This prevents duplicate entries on refresh 
-    processed_ids = processed_sheet.col_values(1)
+    processed_ids = get_processed_ids()
 
     if session_id in processed_ids:
 
@@ -243,7 +270,7 @@ if success == "true":
     # FIND NEXT WEB NUMBER
     # -----------------------------------------
 
-    records = sheet.get_all_records()
+    records = get_records()
 
     web_numbers = []
 
@@ -342,6 +369,8 @@ if success == "true":
                 "Online Purchase"   # Comments
             ]
         )
+    # Clear cached Google Sheet data
+    get_records.clear()
     send_confirmation_email(
         email,
         full_name,
@@ -356,6 +385,8 @@ if success == "true":
     processed_sheet.append_row(
     [session_id]
     )
+    get_processed_ids.clear()
+    get_records.clear()
 # --------------------------------------------------
 # STRIPE CHECKOUT SESSION
 # --------------------------------------------------
@@ -526,14 +557,24 @@ st.write(
 )
 
 # --------------------------------------------------
-# PURCHASE FORM
+# PURCHASE FORM / INFO BEFORE FORM
 # --------------------------------------------------
 
+st.write("Ticket Holder Names")
+
+use_primary_name = st.checkbox(
+    "Use primary name for all tickets",
+    value=True
+)
+
+# --------------------------------------------------
+# PURCHASE FORM SECTION START
+# --------------------------------------------------
+        
 with st.form(
     "online_purchase_form",
     clear_on_submit=False
 ):
-
     full_name = st.text_input(
         "Full Name"
     )
@@ -543,25 +584,39 @@ with st.form(
     )
 
     email = st.text_input(
-        "Email Address"
-    )  
-    # --------------------------------------------------
-    # Ticket Holder Names (must be BEFORE the form)
-    # --------------------------------------------------
-
+    "Email Address"
+    )
     st.write("Ticket Holder Names")
-
-    use_primary_name = st.checkbox("Use primary name for all tickets")
 
     ticket_names = []
 
     if use_primary_name:
-        ticket_names = [full_name] * quantity  # full_name defined later but safe
-    else:
-        for i in range(quantity):
-            name = st.text_input(f"Name for Ticket {i+1}", key=f"ticket_name_{i}")
-            ticket_names.append(name)
 
+        if full_name.strip():
+
+            st.success(
+                f"✅ All {quantity} ticket(s) will be assigned to: {full_name}"
+            )
+
+        else:
+
+            st.info(
+                "Enter your Full Name above."
+            )
+
+        ticket_names = [full_name] * quantity
+
+    else:
+
+        for i in range(quantity):
+
+            ticket_name = st.text_input(
+                f"Name for Ticket {i+1}",
+                key=f"ticket_name_{i}"
+            )
+
+            ticket_names.append(ticket_name)
+    
     col1, col2 = st.columns([1.3, 1])
 
     with col1:
@@ -600,7 +655,6 @@ with st.form(
 
 if submit:
 
-
     if not accept_terms:
 
         st.error(
@@ -620,7 +674,7 @@ if submit:
         )
 
     elif not email.strip():
-
+        
         st.error(
             "Please enter your email address."
         )
