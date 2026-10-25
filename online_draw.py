@@ -12,7 +12,7 @@ import smtplib
 
 st.set_page_config(
     page_title="Ballymore Draw Online",
-    page_icon="🎟️",
+    page_icon="logo.png",
     layout="centered"
 )
 st.logo("logo.png")
@@ -63,6 +63,23 @@ div[data-testid="stForm"] button * {
     text-align: center;
 }
 
+[data-testid="stMetric"] {
+    text-align: center;
+    background-color: #FFF8CC;
+    border: 1px solid #FFD700;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+section[data-testid="stSidebar"] {
+    background-color: #F9F9F9;
+}
+
+.stButton > button:hover,
+[data-testid="stLinkButton"] a:hover {
+    transform: translateY(-1px);
+    transition: 0.2s;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -455,6 +472,14 @@ with st.sidebar:
     🥇 €1,000 &nbsp; 🥈 €100 &nbsp; 🥉 €100
 </div>
 """, unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    st.caption("""
+    Ballymore GFC  
+    Supporters Draw  
+    ballymoredraw@gmail.com
+    """)
     st.markdown("---")
 
 # --------------------------------------------------
