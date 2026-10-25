@@ -53,7 +53,7 @@ with open(".streamlit/style.css") as f:
 # -------------------------------
 st.markdown("""
 <div style="background:#FFD300;padding:6px 10px;border-radius:4px;margin-bottom:15px;text-align:center;">
-    <span style="color:#000;font-weight:500;font-size:17px;font-style:italic;font-family: 'Georgia', serif;">
+    <span style="color:#000;font-weight:500;font-size:17px;font-family:'Georgia',serif;">
         🏐 Ballymore Supporters Draw - Sellers Online Entry 🏐
     </span>
 </div>
