@@ -272,13 +272,10 @@ with st.sidebar:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Centred button
-    col1, col2, col3 = st.columns([0.03,5,0.02])
-    with col2:
-        st.link_button(
-            "💳 Buy Tickets Online - Click Here",
-            "https://ballymore-supporters-draw-entry-list-dv6ewrazn6cbzzfgrd7jvc.streamlit.app/"
-        )
+    st.link_button(
+        "💳 To Buy Tickets Online -- Click Here",
+        "https://ballymore-supporters-draw-entry-list-dv6ewrazn6cbzzfgrd7jvc.streamlit.app/"
+     )
 # --------------------------------------------------
 # Spilt for Tabs
 # --------------------------------------------------
@@ -307,10 +304,7 @@ if "seller_pin_ok" not in st.session_state:
 # PAGE
 # --------------------------------------------------
 with tab1:
-
-    st.caption("**Please enter the ticket holder's details below and click Submit Entry when complete**")
         
-
     if "name" not in st.session_state:
         st.session_state.name = ""
 
@@ -379,7 +373,7 @@ with tab1:
     text-align:center;
     font-weight:500;
 ">
-    🔑 Enter Seller PIN to enable ticket entry and viewing seller tickets.
+    🔑 Enter Seller PIN to enable ticket entry and for viewing seller tickets.
 </div>
 """, unsafe_allow_html=True)
 # --------------------------------------------------
