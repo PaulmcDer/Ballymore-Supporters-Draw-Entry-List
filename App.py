@@ -165,8 +165,19 @@ div[data-testid="stForm"] button p {
     padding: 10px;
 }
 
-section[data-testid="stSidebar"] {
-    background-color: #FFF8CC;
+/* Metric label */
+[data-testid="stMetricLabel"] {
+    color: #000000 !important;
+}
+
+/* Metric value */
+[data-testid="stMetricValue"] {
+    color: #000000 !important;
+}
+
+/* Any text inside metric */
+[data-testid="stMetric"] * {
+    color: #000000 !important;
 }
 
 .stButton > button:hover,
