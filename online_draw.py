@@ -33,7 +33,7 @@ st.logo("logo.png")
     
 st.markdown("""
 <div style="background:#FFD300;padding:6px 10px;border-radius:4px;margin-bottom:15px;text-align:center;">
-     <span style="color:#000;font-weight:600;font-size:17px;">
+     <span style="color:#000;font-weight:500;font-size:17px;font-family: Georgia, serif;">
         🏐 Ballymore Supporters Draw — Online Ticket Purchase 🏐
     </span>
 </div>
@@ -545,6 +545,9 @@ st.markdown("""
     border-radius:10px;
     border:2px solid #FFD700;
     text-align:center;
+    font-style: italic;
+    font-family: Georgia, serif;
+    font-size:15px;
 ">
     🎟 Select your tickets, enter your details and complete the secure Stripe payment.
 </div>
