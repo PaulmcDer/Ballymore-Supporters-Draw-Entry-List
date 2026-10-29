@@ -104,75 +104,79 @@ ticket_count = len(records)
 st.markdown("""
 <style>
 
-/* Normal buttons */
-.stButton > button {
-    background-color: #FFD700 !important;
-    color: black !important;
-    font-weight: bold !important;
-    border-radius: 8px !important;
-    border: 1px solid #b8860b !important;
-}
-
-/* Hover */
-.stButton > button:hover {
-    background-color: #ffea00 !important;
-    color: black !important;
-}
-
-/* Link buttons (Revolut button) */
-[data-testid="stLinkButton"] a {
-    background-color: #FFD700 !important;
-    color: black !important;
-    font-weight: bold !important;
-    border-radius: 8px !important;
-    border: 1px solid #b8860b !important;
-}
-
-/* Link button hover */
-[data-testid="stLinkButton"] a:hover {
-    background-color: #ffea00 !important;
-    color: black !important;
-}
-
-/* Form Submit Buttons */
-div[data-testid="stForm"] button {
-    background-color: #FFD700 !important;
-    color: black !important;
-    font-weight: bold !important;
-    border-radius: 8px !important;
-    border: 1px solid #b8860b !important;
-}
-
-div[data-testid="stForm"] button:hover {
-    background-color: #ffea00 !important;
-    color: black !important;
-}
+/* ===========================
+   STANDARD BUTTONS
+   =========================== */
 
 .stButton > button {
-    background-color: #FFD700 !important;
+    background-color: #FFD300 !important;
     color: #000000 !important;
     font-weight: bold !important;
+    border-radius: 8px !important;
+    border: 1px solid #b8860b !important;
 }
 
 .stButton > button p {
     color: #000000 !important;
 }
 
+.stButton > button:hover {
+    background-color: #ffea00 !important;
+    color: #000000 !important;
+    transform: translateY(-1px);
+    transition: 0.2s;
+}
+
+/* ===========================
+   FORM BUTTONS
+   =========================== */
+
 div[data-testid="stForm"] button {
-    background-color: #FFD700 !important;
+    background-color: #FFD300 !important;
     color: #000000 !important;
     font-weight: bold !important;
+    border-radius: 8px !important;
+    border: 1px solid #b8860b !important;
 }
 
 div[data-testid="stForm"] button p {
     color: #000000 !important;
 }
-/* Revolut Link Button Text */
+
+div[data-testid="stForm"] button:hover {
+    background-color: #ffea00 !important;
+    transform: translateY(-1px);
+    transition: 0.2s;
+}
+
+/* ===========================
+   LINK BUTTONS
+   =========================== */
+
+[data-testid="stLinkButton"] a {
+    background-color: #FFD300 !important;
+    color: #000000 !important;
+    font-weight: bold !important;
+    border-radius: 8px !important;
+    border: 1px solid #b8860b !important;
+}
+
 [data-testid="stLinkButton"] a,
 [data-testid="stLinkButton"] a * {
-    color: black !important;
+    color: #000000 !important;
     font-weight: bold !important;
 }
+
+[data-testid="stLinkButton"] a:hover {
+    background-color: #ffea00 !important;
+    color: #000000 !important;
+    transform: translateY(-1px);
+    transition: 0.2s;
+}
+
+/* ===========================
+   METRICS
+   =========================== */
 
 [data-testid="stMetric"] {
     text-align: center;
@@ -182,29 +186,50 @@ div[data-testid="stForm"] button p {
     padding: 10px;
 }
 
-/* Metric label */
-[data-testid="stMetricLabel"] {
-    color: #000000 !important;
-}
-
-/* Metric value */
+[data-testid="stMetric"] *,
+[data-testid="stMetricLabel"],
 [data-testid="stMetricValue"] {
     color: #000000 !important;
 }
 
-/* Any text inside metric */
-[data-testid="stMetric"] * {
+/* ===========================
+   TABS
+   =========================== */
+
+/* All tabs */
+.stTabs [data-baseweb="tab"] {
+    min-height: 50px;
+    padding: 0 20px;
+    color: #555555 !important;
+    font-weight: 500 !important;
+    border-radius: 8px 8px 0 0;
+}
+
+/* Hover */
+.stTabs [data-baseweb="tab"]:hover {
     color: #000000 !important;
 }
 
-.stButton > button:hover,
-[data-testid="stLinkButton"] a:hover {
-    transform: translateY(-1px);
-    transition: 0.2s;
+/* ACTIVE TAB */
+.stTabs [aria-selected="true"] {
+    color: #B8860B !important;      /* Dark gold text */
+    font-weight: 800 !important;
 }
+
+/* Active tab text */
+.stTabs [aria-selected="true"] p {
+    color: #B8860B !important;
+    font-weight: 800 !important;
+}
+
+/* Yellow underline */
+.stTabs [data-baseweb="tab-highlight"] {
+    background-color: #FFD300 !important;
+    height: 4px !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
-
 # --------------------------------------------------
 # FIND TOTAL WEB TICKET NUMBERS
 # --------------------------------------------------
@@ -279,11 +304,12 @@ with st.sidebar:
 # Spilt for Tabs
 # --------------------------------------------------
 
-tab1, tab2, tab3, tab4 = st.tabs(
+tab1, tab2, tab3, tab4, tab5 = st.tabs(
     [
         "🎟 Ticket Entry",
         "📋 Last Year's Sales",
         "💳 Payment",
+        "📊 Dashboard",
         "🔐 Admin"
         
     ]
@@ -698,10 +724,105 @@ with tab3:
         )
 
 # --------------------------------------------------
-# ADMIN VIEW
+# DASHBOARD
 # --------------------------------------------------
 
 with tab4:
+
+    st.subheader("📊 Sales Dashboard")
+
+    admin_pin = st.text_input(
+        "Admin PIN",
+        type="password",
+        key="dashboard_pin"
+    )
+
+    if admin_pin == st.secrets["ADMIN_PIN"]:
+
+        records = get_records()
+
+        if not records:
+            st.info("No data available.")
+            st.stop()
+
+        df = pd.DataFrame(records)
+
+        # -----------------------------
+        # Clean Data
+        # -----------------------------
+
+        if "Paid" in df.columns:
+
+            payment_counts = (
+                df["Paid"]
+                .fillna("Unknown")
+                .value_counts()
+            )
+
+        # -----------------------------
+        # KPI CARDS
+        # -----------------------------
+
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            st.metric(
+                "🎟 Total Tickets",
+                len(df)
+            )
+
+        with col2:
+            st.metric(
+                "👥 Unique Sellers",
+                df["Seller Name"].nunique()
+            )
+
+        with col3:
+            st.metric(
+                "💳 Recorded Payments",
+                len(
+                    df[
+                        df["Paid"] != "Not Paid"
+                    ]
+                )
+            )
+
+        st.markdown("---")
+
+        # -----------------------------
+        # TICKETS BY PAYMENT TYPE
+        # -----------------------------
+
+        st.subheader("💳 Payment Methods")
+
+        st.bar_chart(payment_counts)
+
+        st.markdown("---")
+
+        # -----------------------------
+        # SELLER LEADERBOARD
+        # -----------------------------
+
+        st.subheader("🏆 Top Sellers")
+
+        seller_counts = (
+            df["Seller Name"]
+            .fillna("Unknown")
+            .value_counts()
+        )
+
+        st.bar_chart(seller_counts.head(10))
+
+        st.markdown("---")
+
+    elif admin_pin != "":
+        st.error("Invalid PIN")
+
+# --------------------------------------------------
+# ADMIN VIEW
+# --------------------------------------------------
+
+with tab5:
 
     st.markdown("---")
     st.subheader("Admin Access")
