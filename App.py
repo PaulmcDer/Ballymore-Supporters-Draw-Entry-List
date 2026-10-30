@@ -61,7 +61,7 @@ st.markdown("""
 
 
 # --------------------------------------------------
-# GOOGLE SHEETS CONNECTION & CACHE ALL RECORDS
+# GOOGLE SHEETS CONNECTION & CACHE ALL RECORDS / TIME
 # --------------------------------------------------
 
 scope = [
@@ -95,6 +95,14 @@ def get_phone_numbers():
         str(x).strip().replace(" ", "")
         for x in sheet.col_values(4)[1:]
     ]
+
+last_year_sheet = client.open_by_key(
+    SHEET_ID
+).worksheet("Last_Year_Tickets")
+
+@st.cache_data(ttl=3600)  # 1 hour
+def get_last_year_records():
+    return last_year_sheet.get_all_records()
 
 records = get_records()
 ticket_count = len(records)
@@ -627,16 +635,12 @@ with tab2:
 
         st.markdown("---")
 
-    last_year_sheet = client.open_by_key(SHEET_ID).worksheet(
-        "Last_Year_Tickets"
-    )
-
     show_sellers = st.button(
         "📋 Show Last Year's Tickets By Seller",
         disabled=not st.session_state.save_pin_ok
     )
 
-    records = last_year_sheet.get_all_records()
+    records = get_last_year_records()
 
     if not records:
 
