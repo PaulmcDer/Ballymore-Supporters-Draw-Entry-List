@@ -726,18 +726,17 @@ with tab3:
 # --------------------------------------------------
 # DASHBOARD
 # --------------------------------------------------
-
 with tab4:
 
     st.subheader("📊 Sales Dashboard")
 
-    admin_pin = st.text_input(
-        "Admin PIN",
+    save_pin = st.text_input(
+        "Enter PIN to View Dashboard",
         type="password",
-        key="dashboard_pin"
+        max_chars=4
     )
 
-    if admin_pin == st.secrets["ADMIN_PIN"]:
+    if save_pin == st.secrets["SAVE_PIN"]:
 
         records = get_records()
 
@@ -815,7 +814,7 @@ with tab4:
 
         st.markdown("---")
 
-    elif admin_pin != "":
+    elif save_pin != "":
         st.error("Invalid PIN")
 
 # --------------------------------------------------
