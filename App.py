@@ -104,6 +104,14 @@ last_year_sheet = client.open_by_key(
 def get_last_year_records():
     return last_year_sheet.get_all_records()
 
+users_sheet = client.open_by_key(
+    SHEET_ID
+).worksheet("Users")
+
+@st.cache_data(ttl=300)
+def load_users():
+    return users_sheet.get_all_records()
+
 records = get_records()
 ticket_count = len(records)
 # --------------------------------------------------
@@ -850,6 +858,7 @@ with tab5:
             st.error("Invalid PIN.")
 
     if st.session_state.admin_pin_ok:
+        st.write("ADMIN LOGGED IN")
 
         # Always refresh directly from Google Sheets
         records = sheet.get_all_records()
@@ -937,6 +946,171 @@ with tab5:
 
             else:
                 st.error("Ticket not found.")
+
+    # --------------------------------------------------
+    # SELLER ACCESS
+    # --------------------------------------------------
+    st.markdown("---")
+    st.subheader("Seller Access")
+
+    if "seller_logged_in" not in st.session_state:
+        st.session_state.seller_logged_in = False
+
+    if "seller_name" not in st.session_state:
+        st.session_state.seller_name = ""
+
+    if "seller_update_message" not in st.session_state:
+        st.session_state.seller_update_message = ""
+
+    seller_username = st.text_input(
+        "Seller Username"
+    )
+
+    seller_pin = st.text_input(
+        "Seller PIN",
+        type="password"
+    )
+
+    if st.button("Seller Login"):
+
+        users = load_users()
+
+        match = next(
+            (
+                user
+                for user in users
+                if user["Username"].strip().lower()
+                == seller_username.strip().lower()
+                and str(user["PIN"]).strip()
+                == seller_pin.strip()
+            ),
+            None,
+        )
+
+        if match:
+
+            st.session_state.seller_logged_in = True
+            st.session_state.seller_name = match["Username"]
+
+            st.success(
+                f"Welcome {match['Username']}"
+            )
+
+        else:
+            st.error("Invalid username or PIN")
+
+    if st.session_state.seller_logged_in:
+
+        seller_name = st.session_state.seller_name
+
+        # Always refresh directly from Google Sheets
+        all_records = sheet.get_all_records()
+
+        # Only this seller's entries
+        seller_records = [
+            row
+            for row in all_records
+            if row["Seller Name"].strip().lower()
+            == seller_name.strip().lower()
+        ]
+
+        # Show newest first
+        display_records = list(reversed(seller_records))
+
+        results = []
+
+        for row in display_records:
+
+            results.append(
+                {
+                    "Seller Name": row["Seller Name"],
+                    "Ticket Holder": row["Name"],
+                    "Ticket Number": row["Ticket Number"],
+                    "Paid": row["Paid"]
+                }
+            )
+
+        st.success(f"Logged in as {seller_name}")
+
+        st.info(f"{len(results)} entries found.")
+
+        st.dataframe(
+            results,
+            use_container_width=True
+        )
+
+        st.markdown("---")
+        st.subheader("Update Payment Status")
+
+        ticket_options = [
+            f"{r['Ticket Number']} | {r['Name']} | {r['Seller Name']}"
+            for r in display_records
+        ]
+
+        if ticket_options:
+
+            with st.form("seller_payment_update_form"):
+
+                selected_entry = st.selectbox(
+                    "Select Entry",
+                    ticket_options
+                )
+
+                new_status = st.selectbox(
+                    "New Payment Status",
+                    [
+                        "Not Paid",
+                        "Paid by revolut",
+                        "Paid by BOI",
+                        "Paid by Cash/Cheque"
+                    ]
+                )
+
+                update_status = st.form_submit_button(
+                    "Update Payment Status"
+                )
+
+            if st.session_state.seller_update_message:
+                st.success(
+                    st.session_state.seller_update_message
+                )
+                st.session_state.seller_update_message = ""
+
+            if update_status:
+
+                selected_ticket = (
+                    selected_entry.split(" | ")[0]
+                )
+
+                row_number = None
+
+                for idx, row in enumerate(
+                    all_records,
+                    start=2
+                ):
+                    if row["Ticket Number"] == selected_ticket:
+                        row_number = idx
+                        break
+
+                if row_number:
+
+                    sheet.update_cell(
+                        row_number,
+                        5,
+                        new_status
+                    )
+
+                    st.session_state.seller_update_message = (
+                        f"✅ {selected_ticket} updated successfully to '{new_status}'"
+                    )
+
+                    st.rerun()
+
+                else:
+                    st.error("Ticket not found.")
+
+        else:
+            st.info("No entries found for this seller.")
 # --------------------------------------------------
 # FOOTER
 # --------------------------------------------------
