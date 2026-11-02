@@ -824,40 +824,42 @@ with tab4:
 # --------------------------------------------------
 # ADMIN VIEW
 # --------------------------------------------------
-
 with tab5:
 
     st.markdown("---")
     st.subheader("Admin Access")
 
-    if "show_admin_table" not in st.session_state:
-        st.session_state.show_admin_table = False
+    if "admin_pin_ok" not in st.session_state:
+        st.session_state.admin_pin_ok = False
+
+    if "admin_update_message" not in st.session_state:
+        st.session_state.admin_update_message = ""
 
     admin_pin = st.text_input(
         "Admin PIN",
         type="password"
     )
 
-    if st.button("View Full Table"):
+    if st.button("Login"):
 
         if admin_pin == st.secrets["ADMIN_PIN"]:
-            st.session_state.show_admin_table = True
-
+            st.session_state.admin_pin_ok = True
+            st.success("Admin access granted.")
         else:
+            st.session_state.admin_pin_ok = False
             st.error("Invalid PIN.")
 
-    if (
-        st.session_state.show_admin_table
-        and admin_pin == st.secrets["ADMIN_PIN"]
-    ):
+    if st.session_state.admin_pin_ok:
 
-        records = get_records()
-        records.reverse()
+        # Always refresh directly from Google Sheets
+        records = sheet.get_all_records()
+
+        # Show newest entries first
+        display_records = list(reversed(records))
 
         results = []
 
-        for row in records:
-
+        for row in display_records:
             results.append(
                 {
                     "Seller Name": row["Seller Name"],
@@ -867,9 +869,7 @@ with tab5:
                 }
             )
 
-        st.success(
-            f"{len(results)} entries found."
-        )
+        st.info(f"{len(results)} entries found.")
 
         st.dataframe(
             results,
@@ -877,12 +877,18 @@ with tab5:
         )
 
         st.markdown("---")
+        st.subheader("Update Payment Status")
+
+        ticket_options = [
+            f"{r['Ticket Number']} | {r['Name']} | {r['Seller Name']}"
+            for r in display_records
+        ]
 
         with st.form("payment_update_form"):
 
-            ticket_to_update = st.selectbox(
-                "Select Ticket Number",
-                [r["Ticket Number"] for r in records]
+            selected_entry = st.selectbox(
+                "Select Entry",
+                ticket_options
             )
 
             new_status = st.selectbox(
@@ -899,23 +905,38 @@ with tab5:
                 "Update Payment Status"
             )
 
+        # Show success message directly under form
+        if st.session_state.admin_update_message:
+            st.success(st.session_state.admin_update_message)
+            st.session_state.admin_update_message = ""
+
         if update_status:
 
-            cell = sheet.find(ticket_to_update)
+            selected_ticket = selected_entry.split(" | ")[0]
 
-            row_number = cell.row
+            row_number = None
 
-            sheet.update_cell(
-                row_number,
-                5,  # Paid column
-                new_status
-            )
+            for idx, row in enumerate(records, start=2):
+                if row["Ticket Number"] == selected_ticket:
+                    row_number = idx
+                    break
 
-            st.success(
-                "Payment status updated."
-            )
-            get_records.clear()
-            st.rerun()
+            if row_number:
+
+                sheet.update_cell(
+                    row_number,
+                    5,
+                    new_status
+                )
+
+                st.session_state.admin_update_message = (
+                    f"✅ {selected_ticket} updated successfully to '{new_status}'"
+                )
+
+                st.rerun()
+
+            else:
+                st.error("Ticket not found.")
 # --------------------------------------------------
 # FOOTER
 # --------------------------------------------------
