@@ -830,6 +830,9 @@ with tab5:
     st.markdown("---")
     st.subheader("Admin Access")
 
+    if "show_admin_table" not in st.session_state:
+        st.session_state.show_admin_table = False
+
     admin_pin = st.text_input(
         "Admin PIN",
         type="password"
@@ -838,30 +841,81 @@ with tab5:
     if st.button("View Full Table"):
 
         if admin_pin == st.secrets["ADMIN_PIN"]:
-
-            records = get_records()
-            records.reverse()
-
-            results = []
-
-            for row in records:
-
-                results.append(
-                    {
-                        "Seller Name": row["Seller Name"],
-                        "Ticket Holder": row["Name"],
-                        "Ticket Number": row["Ticket Number"],
-                        "Paid": row["Paid"]
-                    }
-                )
-
-            st.success(f"{len(results)} entries found.")
-
-            st.dataframe(results, use_container_width=True)
-
+            st.session_state.show_admin_table = True
 
         else:
             st.error("Invalid PIN.")
+
+    if (
+        st.session_state.show_admin_table
+        and admin_pin == st.secrets["ADMIN_PIN"]
+    ):
+
+        records = get_records()
+        records.reverse()
+
+        results = []
+
+        for row in records:
+
+            results.append(
+                {
+                    "Seller Name": row["Seller Name"],
+                    "Ticket Holder": row["Name"],
+                    "Ticket Number": row["Ticket Number"],
+                    "Paid": row["Paid"]
+                }
+            )
+
+        st.success(
+            f"{len(results)} entries found."
+        )
+
+        st.dataframe(
+            results,
+            use_container_width=True
+        )
+
+        st.markdown("---")
+
+        with st.form("payment_update_form"):
+
+            ticket_to_update = st.selectbox(
+                "Select Ticket Number",
+                [r["Ticket Number"] for r in records]
+            )
+
+            new_status = st.selectbox(
+                "New Payment Status",
+                [
+                    "Not Paid",
+                    "Paid by revolut",
+                    "Paid by BOI",
+                    "Paid by Cash/Cheque"
+                ]
+            )
+
+            update_status = st.form_submit_button(
+                "Update Payment Status"
+            )
+
+        if update_status:
+
+            cell = sheet.find(ticket_to_update)
+
+            row_number = cell.row
+
+            sheet.update_cell(
+                row_number,
+                5,  # Paid column
+                new_status
+            )
+
+            st.success(
+                "Payment status updated."
+            )
+            get_records.clear()
+            st.rerun()
 # --------------------------------------------------
 # FOOTER
 # --------------------------------------------------
