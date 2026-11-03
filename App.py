@@ -848,7 +848,7 @@ with tab5:
 
         results = []
 
-       for row in display_records:
+        for row in display_records:
             results.append(
                 {
                     "Seller Name": row["Seller Name"],
