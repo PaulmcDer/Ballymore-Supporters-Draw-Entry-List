@@ -112,6 +112,11 @@ users_sheet = client.open_by_key(
 def load_users():
     return users_sheet.get_all_records()
 
+#Helper function 
+@st.cache_data(ttl=60)
+def get_ticket_records():
+    return sheet.get_all_records()
+
 records = get_records()
 ticket_count = len(records)
 # --------------------------------------------------
@@ -564,53 +569,6 @@ with tab1:
                 
                 
                 st.rerun()
-# --------------------------------------------------
-# VIEW ENTRIES
-# --------------------------------------------------
-
-    st.markdown("---")
-
-    search_seller = st.text_input(
-        "Enter Seller Name To View Entries",
-        key="search_seller"
-    )
-
-    view_entries = st.button(
-        "View My Entries",
-        disabled=not st.session_state.seller_pin_ok
-    )
-
-    if view_entries:
-
-        if not search_seller.strip():
-            st.warning("Please enter a seller name.")
-        else:
-
-            records = get_records()
-
-            results = []
-
-            for row in records:
-
-                if search_seller.strip().lower() in str(row["Seller Name"]).strip().lower():
-
-                    results.append(
-                        {
-                            "Seller Name": row["Seller Name"],
-                            "Ticket Holder": row["Name"],
-                            "Ticket Number": row["Ticket Number"]
-                        }
-                    )
-
-            if results:
-
-                st.metric("Total Entries", len(results))
-                
-                st.dataframe(
-                    results, use_container_width=True
-                )
-            else:
-                st.info("No entries found for that seller.")
 
 # --------------------------------------------------
 # LAST YEAR'S SALES TAB
@@ -626,75 +584,74 @@ with tab2:
 # session_state as: Memory for this user's session
 # "not in" is checking whether something doesn't exist yet.
 
-    save_pin = st.text_input(
-        "Enter 4‑digit PIN",
-        type="password",
-        max_chars=4
-    )
-
-    if save_pin == st.secrets["SAVE_PIN"]:
-        st.session_state.save_pin_ok = True
-        st.success("PIN accepted")
-    elif save_pin == "":
+    if "save_pin_ok" not in st.session_state:
         st.session_state.save_pin_ok = False
-    else:
-        st.session_state.save_pin_ok = False
-        st.error("Incorrect PIN")
 
-        st.markdown("---")
+    if not st.session_state.save_pin_ok:
 
-    show_sellers = st.button(
-        "📋 Show Last Year's Tickets By Seller",
-        disabled=not st.session_state.save_pin_ok
-    )
+        with st.form("last_year_login"):
 
-    records = get_last_year_records()
+            save_pin = st.text_input(
+                "Enter 4-digit PIN",
+                type="password",
+                max_chars=4
+            )
 
-    if not records:
+            pin_login = st.form_submit_button(
+                "Login"
+            )
 
-        st.info(
-            "No records found in Last Year's Tickets yet."
-        )
+        if pin_login:
 
-    else:
+            if save_pin == st.secrets["SAVE_PIN"]:
+                st.session_state.save_pin_ok = True
+                st.rerun()
+            else:
+                st.error("Incorrect PIN")
+
+    if st.session_state.save_pin_ok:
+
+        col1, col2 = st.columns([6,1])
+
+        with col1:
+            st.success("Access Granted")
+
+        with col2:
+            if st.button(
+                "Logout",
+                key="last_year_logout"
+            ):
+                st.session_state.save_pin_ok = False
+                st.rerun()
+
+        records = get_last_year_records()
 
         df = pd.DataFrame(records)
-
         df.columns = df.columns.str.strip()
-            #if "show_sellers" doesn't exist:
-        if "show_sellers" not in st.session_state:
-            st.session_state.show_sellers = False
 
-        if show_sellers:
-            st.session_state.show_sellers = True
+        seller_names = sorted(
+            df["Seller"].dropna().unique()
+        )
 
-        if (st.session_state.show_sellers
-            and st.session_state.save_pin_ok):
+        seller = st.selectbox(
+            "Select Seller",
+            seller_names
+        )
 
-            seller_names = sorted(
-                df["Seller"].dropna().unique()
-            )
+        filtered_df = df[
+            df["Seller"] == seller
+        ]
 
-            seller = st.selectbox(
-                "Select Seller",
-                seller_names
-            )
+        st.metric(
+            "Tickets Last Year",
+            len(filtered_df)
+        )
 
-            filtered_df = df[
-                df["Seller"] == seller
-            ]
-
-            st.metric(
-                "Tickets Last Year",
-                len(filtered_df)
-            )
-
-            st.dataframe(
-                filtered_df,
-                use_container_width=True,
-                hide_index=True
-            )
-
+        st.dataframe(
+            filtered_df,
+            use_container_width=True,
+            hide_index=True
+        )
 # --------------------------------------------------
 # REVOLUT PAYMENT TAB
 # --------------------------------------------------
@@ -843,32 +800,55 @@ with tab5:
     if "admin_update_message" not in st.session_state:
         st.session_state.admin_update_message = ""
 
-    admin_pin = st.text_input(
-        "Admin PIN",
-        type="password"
-    )
+    # -------------------------
+    # ADMIN LOGIN
+    # -------------------------
+    if not st.session_state.admin_pin_ok:
 
-    if st.button("Login"):
+        with st.form("admin_login_form"):
 
-        if admin_pin == st.secrets["ADMIN_PIN"]:
-            st.session_state.admin_pin_ok = True
-            st.success("Admin access granted.")
-        else:
-            st.session_state.admin_pin_ok = False
-            st.error("Invalid PIN.")
+            admin_pin = st.text_input(
+                "Admin PIN",
+                type="password"
+            )
 
+            admin_login = st.form_submit_button(
+                "Login"
+            )
+
+        if admin_login:
+
+            if admin_pin == st.secrets["ADMIN_PIN"]:
+                st.session_state.admin_pin_ok = True
+                st.rerun()
+            else:
+                st.error("Invalid PIN")
+
+    # -------------------------
+    # ADMIN AREA
+    # -------------------------
     if st.session_state.admin_pin_ok:
-        st.write("ADMIN LOGGED IN")
 
-        # Always refresh directly from Google Sheets
-        records = sheet.get_all_records()
+        col1, col2 = st.columns([6, 1])
 
-        # Show newest entries first
+        with col1:
+            st.success("ADMIN LOGGED IN")
+
+        with col2:
+            if st.button(
+                "Logout",
+                key="admin_logout"
+            ):
+                st.session_state.admin_pin_ok = False
+                st.rerun()
+
+        records = get_ticket_records()
+
         display_records = list(reversed(records))
 
         results = []
 
-        for row in display_records:
+       for row in display_records:
             results.append(
                 {
                     "Seller Name": row["Seller Name"],
@@ -914,24 +894,33 @@ with tab5:
                 "Update Payment Status"
             )
 
-        # Show success message directly under form
         if st.session_state.admin_update_message:
-            st.success(st.session_state.admin_update_message)
+            st.success(
+                st.session_state.admin_update_message
+            )
             st.session_state.admin_update_message = ""
 
         if update_status:
 
-            selected_ticket = selected_entry.split(" | ")[0]
+            selected_ticket = (
+                selected_entry.split(" | ")[0]
+            )
 
             row_number = None
 
-            for idx, row in enumerate(records, start=2):
-                if row["Ticket Number"] == selected_ticket:
+            for idx, row in enumerate(
+                records,
+                start=2
+            ):
+                if (
+                    row["Ticket Number"]
+                    == selected_ticket
+                ):
                     row_number = idx
                     break
 
             if row_number:
-
+                
                 sheet.update_cell(
                     row_number,
                     5,
@@ -941,6 +930,7 @@ with tab5:
                 st.session_state.admin_update_message = (
                     f"✅ {selected_ticket} updated successfully to '{new_status}'"
                 )
+                get_ticket_records.clear()
 
                 st.rerun()
 
@@ -950,6 +940,7 @@ with tab5:
     # --------------------------------------------------
     # SELLER ACCESS
     # --------------------------------------------------
+
     st.markdown("---")
     st.subheader("Seller Access")
 
@@ -962,51 +953,79 @@ with tab5:
     if "seller_update_message" not in st.session_state:
         st.session_state.seller_update_message = ""
 
-    seller_username = st.text_input(
-        "Seller Username"
-    )
+    # -------------------------
+    # SELLER LOGIN
+    # -------------------------
+    if not st.session_state.seller_logged_in:
+        
+        with st.form("seller_login_form"):
 
-    seller_pin = st.text_input(
-        "Seller PIN",
-        type="password"
-    )
-
-    if st.button("Seller Login"):
-
-        users = load_users()
-
-        match = next(
-            (
-                user
-                for user in users
-                if user["Username"].strip().lower()
-                == seller_username.strip().lower()
-                and str(user["PIN"]).strip()
-                == seller_pin.strip()
-            ),
-            None,
-        )
-
-        if match:
-
-            st.session_state.seller_logged_in = True
-            st.session_state.seller_name = match["Username"]
-
-            st.success(
-                f"Welcome {match['Username']}"
+            seller_username = st.text_input(
+                "Seller Username"
             )
 
-        else:
-            st.error("Invalid username or PIN")
+            seller_pin = st.text_input(
+                "Seller PIN",
+                type="password"
+            )
 
+            seller_login = st.form_submit_button(
+                "Seller Login"
+            )
+
+        if seller_login:
+
+            users = load_users()
+
+            match = next(
+                (
+                    user
+                    for user in users
+                    if user["Username"].strip().lower()
+                    == seller_username.strip().lower()
+                    and str(user["PIN"]).strip()
+                    == seller_pin.strip()
+                ),
+                None,
+            )
+
+            if match:
+
+                st.session_state.seller_logged_in = True
+                st.session_state.seller_name = match["Username"]
+
+                st.rerun()
+
+            else:
+                st.error("Invalid username or PIN")
+
+    # -------------------------
+    # SELLER AREA
+    # -------------------------
     if st.session_state.seller_logged_in:
 
-        seller_name = st.session_state.seller_name
+        seller_name = (
+            st.session_state.seller_name
+        )
 
-        # Always refresh directly from Google Sheets
-        all_records = sheet.get_all_records()
+        col1, col2 = st.columns([6, 1])
 
-        # Only this seller's entries
+        with col1:
+            st.success(
+                f"Logged in as {seller_name}"
+            )
+
+        with col2:
+            if st.button(
+                "Logout",
+                key="seller_logout"
+            ):
+                st.session_state.seller_logged_in = False
+                st.session_state.seller_name = ""
+                st.rerun()
+
+        all_records = get_ticket_records()
+
         seller_records = [
             row
             for row in all_records
@@ -1014,8 +1033,9 @@ with tab5:
             == seller_name.strip().lower()
         ]
 
-        # Show newest first
-        display_records = list(reversed(seller_records))
+        display_records = list(
+            reversed(seller_records)
+        )
 
         results = []
 
@@ -1030,9 +1050,9 @@ with tab5:
                 }
             )
 
-        st.success(f"Logged in as {seller_name}")
-
-        st.info(f"{len(results)} entries found.")
+        st.info(
+            f"{len(results)} entries found."
+        )
 
         st.dataframe(
             results,
@@ -1040,7 +1060,9 @@ with tab5:
         )
 
         st.markdown("---")
-        st.subheader("Update Payment Status")
+        st.subheader(
+            "Update Payment Status"
+        )
 
         ticket_options = [
             f"{r['Ticket Number']} | {r['Name']} | {r['Seller Name']}"
@@ -1049,7 +1071,9 @@ with tab5:
 
         if ticket_options:
 
-            with st.form("seller_payment_update_form"):
+            with st.form(
+                "seller_payment_update_form"
+            ):
 
                 selected_entry = st.selectbox(
                     "Select Entry",
@@ -1066,11 +1090,15 @@ with tab5:
                     ]
                 )
 
-                update_status = st.form_submit_button(
-                    "Update Payment Status"
+                update_status = (
+                    st.form_submit_button(
+                        "Update Payment Status"
+                    )
                 )
 
-            if st.session_state.seller_update_message:
+            if (
+                st.session_state.seller_update_message
+            ):
                 st.success(
                     st.session_state.seller_update_message
                 )
@@ -1088,7 +1116,10 @@ with tab5:
                     all_records,
                     start=2
                 ):
-                    if row["Ticket Number"] == selected_ticket:
+                    if (
+                        row["Ticket Number"]
+                        == selected_ticket
+                    ):
                         row_number = idx
                         break
 
@@ -1103,14 +1134,18 @@ with tab5:
                     st.session_state.seller_update_message = (
                         f"✅ {selected_ticket} updated successfully to '{new_status}'"
                     )
-
+                    get_ticket_records.clear()
                     st.rerun()
 
                 else:
-                    st.error("Ticket not found.")
+                    st.error(
+                        "Ticket not found."
+                    )
 
         else:
-            st.info("No entries found for this seller.")
+            st.info(
+                "No entries found for this seller."
+            )
 # --------------------------------------------------
 # FOOTER
 # --------------------------------------------------
