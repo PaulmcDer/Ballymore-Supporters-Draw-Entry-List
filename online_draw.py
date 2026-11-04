@@ -19,6 +19,7 @@ import smtplib
 from datetime import datetime
 from email.message import EmailMessage
 from google.oauth2.service_account import Credentials
+from gspread.utils import ValueInputOption
 
 # ==================================================
 # PAGE SETUP
@@ -121,39 +122,43 @@ div[data-testid="stForm"] button * {
 # GOOGLE SHEETS CONNECTION
 # --------------------------------------------------
 
-scope = [
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive"
-]
+@st.cache_resource
+def get_sheets():
+    scope = [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive"
+    ]
 
-creds = Credentials.from_service_account_info(
-    st.secrets["gcp_service_account"],
-    scopes=scope
-)
+    creds = Credentials.from_service_account_info(
+        st.secrets["gcp_service_account"],
+        scopes=scope
+    )
 
-client = gspread.authorize(creds)
+    client = gspread.authorize(creds)
+    spreadsheet = client.open_by_key(SHEET_ID)
 
-sheet = client.open_by_key(SHEET_ID).worksheet("Ticket_Entries")
-processed_sheet = client.open_by_key(SHEET_ID).worksheet("Processed_Stripe_Sessions")
+    return (
+        spreadsheet.worksheet("Ticket_Entries"),
+        spreadsheet.worksheet("Processed_Stripe_Sessions")
+    )
+
+
+sheet, processed_sheet = get_sheets()
 
 # ==================================================
 # GOOGLE SHEET FUNCTIONS
 # ==================================================
 
 @st.cache_data(ttl=60)
-def get_records():
-    return sheet.get_all_records()
-
-@st.cache_data(ttl=60)
-def get_processed_ids():
-    return processed_sheet.col_values(1)
+def get_ticket_numbers():
+    return sheet.col_values(3)[1:]
 
 # ==================================================
 # LOAD DATA
 # ==================================================
 
-records = get_records()
-ticket_count = len(records)
+ticket_numbers = get_ticket_numbers()
+ticket_count = len(ticket_numbers)
 
 # ==================================================
 # EMAIL FUNCTIONS
@@ -257,7 +262,7 @@ if success == "true":
         )
         st.stop()
     #This prevents duplicate entries on refresh 
-    processed_ids = get_processed_ids()
+    processed_ids = processed_sheet.col_values(1)
 
     if session_id in processed_ids:
 
@@ -265,11 +270,6 @@ if success == "true":
         st.rerun()
 
         st.stop()
-    quantity = int(
-        session.metadata["quantity"]
-    )
-    ticket_names = session.metadata["ticket_names"].split("|")
-
     # Allocate tickets
     
     # Show confirmation
@@ -286,35 +286,26 @@ if success == "true":
     quantity = int(
         session.metadata["quantity"]
     )
+    ticket_names = session.metadata["ticket_names"].split("|")
+
+    get_ticket_numbers.clear()
+    ticket_numbers = get_ticket_numbers()
 
     # -----------------------------------------
     # HELPER FUNCTIONS
     # -----------------------------------------
 
-    records = get_records()
-
     web_numbers = []
 
-    for row in records:
-
-        ticket = str(
-            row.get("Ticket Number", "")
-        )
+    for ticket in ticket_numbers:
+        ticket = str(ticket)
 
         if ticket.startswith("WEB-"):
-
             try:
-
                 web_numbers.append(
-                    int(
-                        ticket.replace(
-                            "WEB-",
-                            ""
-                        )
-                    )
+                    int(ticket.removeprefix("WEB-"))
                 )
-
-            except:
+            except ValueError:
                 pass
 
     next_ticket = max(
@@ -377,21 +368,25 @@ if success == "true":
         "%d/%m/%Y %H:%M"
     )
 
-    for i, ticket in enumerate(allocated_tickets):
-
-        sheet.append_row(
-            [
-                ticket_names[i],    # Name for this ticket
-                "WEB",              # Seller Name
-                ticket,             # Ticket Number
-                mobile,             # Phone Number
-                "Paid",             # Paid7
-                timestamp,          # Date Submitted
-                "Online Purchase"   # Comments
-            ]
-        )
-    # Clear cached Google Sheet data
-    get_records.clear()
+    ticket_rows = [
+        [
+            ticket_names[i],    # Name for this ticket
+            "WEB",              # Seller Name
+            ticket,             # Ticket Number
+            mobile,             # Phone Number
+            "Paid",             # Paid7
+            timestamp,          # Date Submitted
+            "Online Purchase"   # Comments
+        ]
+        for i, ticket in enumerate(allocated_tickets)
+    ]
+    sheet.append_rows(
+        ticket_rows,
+        value_input_option=ValueInputOption.raw
+    )
+    get_ticket_numbers.clear()
+    ticket_numbers = get_ticket_numbers()
+    ticket_count = len(ticket_numbers)
     send_confirmation_email(
         email,
         full_name,
@@ -406,8 +401,7 @@ if success == "true":
     processed_sheet.append_row(
     [session_id]
     )
-    get_processed_ids.clear()
-    get_records.clear()
+    get_ticket_numbers.clear()
 # --------------------------------------------------
 # STRIPE CHECKOUT SESSION
 # --------------------------------------------------
@@ -463,24 +457,15 @@ def create_checkout_session(
 
 web_numbers = []
 
-for row in records:
-
-    ticket = str(
-        row.get("Ticket Number", "")
-    )
+for ticket in ticket_numbers:
+    ticket = str(ticket)
 
     if ticket.startswith("WEB-"):
-
         try:
             web_numbers.append(
-                int(
-                    ticket.replace(
-                        "WEB-",
-                        ""
-                    )
-                )
+                int(ticket.removeprefix("WEB-"))
             )
-        except:
+        except ValueError:
             pass
 
 next_web_ticket = max(
