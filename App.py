@@ -79,43 +79,39 @@ def get_client():
 
     return gspread.authorize(creds)
 
-client = get_client()
+@st.cache_resource
+def get_worksheets():
+    spreadsheet = get_client().open_by_key(SHEET_ID)
+    return (
+        spreadsheet.worksheet("Ticket_Entries"),
+        spreadsheet.worksheet("Last_Year_Tickets"),
+        spreadsheet.worksheet("Users"),
+    )
 
-sheet = client.open_by_key(
-    SHEET_ID
-).worksheet("Ticket_Entries")
+sheet, last_year_sheet, users_sheet = get_worksheets()
 
 @st.cache_data(ttl=60)
 def get_records():
     return sheet.get_all_records()
 
-@st.cache_data(ttl=60)
 def get_phone_numbers():
-    return [
-        str(x).strip().replace(" ", "")
-        for x in sheet.col_values(4)[1:]
-    ]
+    ticket_records = get_records()
+    if not ticket_records:
+        return []
 
-last_year_sheet = client.open_by_key(
-    SHEET_ID
-).worksheet("Last_Year_Tickets")
+    phone_column = tuple(ticket_records[0])[3]
+    return [
+        str(record.get(phone_column, "")).strip().replace(" ", "")
+        for record in ticket_records
+    ]
 
 @st.cache_data(ttl=3600)  # 1 hour
 def get_last_year_records():
     return last_year_sheet.get_all_records()
 
-users_sheet = client.open_by_key(
-    SHEET_ID
-).worksheet("Users")
-
 @st.cache_data(ttl=300)
 def load_users():
     return users_sheet.get_all_records()
-
-#Helper function 
-@st.cache_data(ttl=60)
-def get_ticket_records():
-    return sheet.get_all_records()
 
 records = get_records()
 ticket_count = len(records)
@@ -563,7 +559,6 @@ with tab1:
                     ]
                 )
                 get_records.clear()
-                get_phone_numbers.clear()
                 st.session_state.reset_form = True
                 st.session_state.show_success = True
                 
@@ -842,7 +837,7 @@ with tab5:
                 st.session_state.admin_pin_ok = False
                 st.rerun()
 
-        records = get_ticket_records()
+        records = get_records()
 
         display_records = list(reversed(records))
 
@@ -930,7 +925,7 @@ with tab5:
                 st.session_state.admin_update_message = (
                     f"✅ {selected_ticket} updated successfully to '{new_status}'"
                 )
-                get_ticket_records.clear()
+                get_records.clear()
 
                 st.rerun()
 
@@ -1024,7 +1019,7 @@ with tab5:
                 st.session_state.seller_name = ""
                 st.rerun()
 
-        all_records = get_ticket_records()
+        all_records = get_records()
 
         seller_records = [
             row
@@ -1134,7 +1129,7 @@ with tab5:
                     st.session_state.seller_update_message = (
                         f"✅ {selected_ticket} updated successfully to '{new_status}'"
                     )
-                    get_ticket_records.clear()
+                    get_records.clear()
                     st.rerun()
 
                 else:
@@ -1155,4 +1150,3 @@ st.markdown("---")
 st.caption(
     "Ballymore GAA Supporters Monthly Draw Ticket Entry System"
 )
-
