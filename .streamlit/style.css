@@ -1,32 +1,182 @@
-/* Global background */
-body {
-    background-color: #ffffff !important;
+/* Ballymore palette and shared surfaces */
+:root {
+    --ballymore-gold: #ffd300;
+    --ballymore-gold-soft: #fff8cc;
+    --ballymore-gold-dark: #9a7200;
+    --ballymore-ink: #171717;
+    --ballymore-muted: #626262;
+    --ballymore-border: #e6dfc3;
+    --ballymore-surface: #ffffff;
 }
 
-/* Sidebar background */
+.stApp {
+    background: #fffefa;
+    color: var(--ballymore-ink);
+}
+
 [data-testid="stSidebar"] {
-    background-color: #f7f7f7 !important;
+    background: #faf8f0;
+    border-right: 1px solid var(--ballymore-border);
+}
+
+[data-testid="stMain"] > div {
+    padding-top: 1.5rem;
+}
+
+/* Branded page header */
+.app-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    margin: 0 0 1.5rem;
+    background: linear-gradient(110deg, #fff4ad 0%, #fffbea 72%);
+    border: 1px solid #ead98a;
+    border-left: 6px solid var(--ballymore-gold);
+    border-radius: 14px;
+}
+
+.app-header img {
+    width: 68px;
+    height: 68px;
+    object-fit: contain;
+    flex: 0 0 auto;
+}
+
+.app-header h1 {
+    margin: 0;
+    color: var(--ballymore-ink);
+    font-size: clamp(1.25rem, 3vw, 1.8rem);
+    line-height: 1.2;
+}
+
+.app-header p {
+    margin: 0.35rem 0 0;
+    color: var(--ballymore-muted);
+    font-size: 0.95rem;
 }
 
 /* Buttons */
-.stButton>button {
-    background-color: #FFD300 !important;
-    color: #000 !important;
-    border-radius: 6px !important;
-    border: 1px solid #000 !important;
-    font-weight: 600 !important;
+.stButton > button,
+div[data-testid="stForm"] button,
+[data-testid="stLinkButton"] a {
+    min-height: 2.7rem;
+    background: var(--ballymore-gold) !important;
+    color: var(--ballymore-ink) !important;
+    border: 1px solid #b18b00 !important;
+    border-radius: 9px !important;
+    font-weight: 700 !important;
+    transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.stButton > button p,
+div[data-testid="stForm"] button p,
+[data-testid="stLinkButton"] a,
+[data-testid="stLinkButton"] a * {
+    color: var(--ballymore-ink) !important;
+    font-weight: 700 !important;
+}
+
+.stButton > button:hover,
+div[data-testid="stForm"] button:hover,
+[data-testid="stLinkButton"] a:hover {
+    background: #ffe66b !important;
+    border-color: var(--ballymore-gold-dark) !important;
+    box-shadow: 0 3px 10px #00000018;
+    transform: translateY(-1px);
+}
+
+.stButton > button:focus-visible,
+div[data-testid="stForm"] button:focus-visible,
+[data-testid="stLinkButton"] a:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid #665000 !important;
+    outline-offset: 2px;
 }
 
 /* Inputs */
-input, textarea, select {
-    border: 1px solid #000 !important;
+[data-testid="stTextInput"] input,
+[data-testid="stTextArea"] textarea,
+[data-testid="stSelectbox"] [role="combobox"] {
+    border-color: #bdb69e !important;
+    border-radius: 8px !important;
 }
 
-.card {
-    background: #FFF8C6;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #FFD300;
-    margin-bottom: 15px;
+/* Metrics and notices */
+[data-testid="stMetric"] {
+    padding: 1rem;
+    background: var(--ballymore-gold-soft);
+    border: 1px solid #ead98a;
+    border-radius: 12px;
 }
 
+[data-testid="stMetricLabel"],
+[data-testid="stMetricValue"],
+[data-testid="stMetric"] * {
+    color: var(--ballymore-ink) !important;
+}
+
+[data-testid="stAlert"] {
+    border-radius: 10px;
+}
+
+/* Tabs */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 0.35rem;
+}
+
+.stTabs [data-baseweb="tab"] {
+    min-height: 48px;
+    padding: 0 1rem;
+    color: var(--ballymore-muted) !important;
+    border-radius: 9px 9px 0 0;
+    font-weight: 600 !important;
+}
+
+.stTabs [data-baseweb="tab"]:hover {
+    color: var(--ballymore-ink) !important;
+    background: #fff9df;
+}
+
+.stTabs [aria-selected="true"],
+.stTabs [aria-selected="true"] p {
+    color: var(--ballymore-ink) !important;
+    font-weight: 800 !important;
+}
+
+.stTabs [data-testid="stTabHighlight"],
+.stTabs [data-baseweb="tab-highlight"] {
+    height: 4px !important;
+    background: var(--ballymore-gold) !important;
+}
+
+/* Tables */
+[data-testid="stDataFrame"] {
+    border: 1px solid var(--ballymore-border);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+@media (max-width: 640px) {
+    [data-testid="stMain"] > div {
+        padding: 1rem 0.75rem 0;
+    }
+
+    .app-header {
+        gap: 0.75rem;
+        padding: 0.85rem;
+        margin-bottom: 1rem;
+    }
+
+    .app-header img {
+        width: 52px;
+        height: 52px;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        min-height: 44px;
+        padding: 0 0.5rem;
+        font-size: 0.85rem;
+    }
+}

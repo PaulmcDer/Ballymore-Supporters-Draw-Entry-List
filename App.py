@@ -25,38 +25,19 @@ def get_base64_logo():
 
 logo = get_base64_logo()
 
-st.markdown(f"""
-<style>
-.logo-container {{
-    position: fixed;
-    top: 6px;
-    left: 45px;
-    z-index: 9999;
-}}
-
-.logo-container img {{
-    height: 34px;
-}}
-</style>
-
-<div class="logo-container">
-    <img src="data:image/png;base64,{logo}">
-</div>
-""", unsafe_allow_html=True)
 # -------------------------------
 # LOAD GLOBAL CSS
 # -------------------------------
 with open(".streamlit/style.css") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-# -------------------------------
-# COMPACT CENTRED BANNER & UI CARDS
-# -------------------------------
-st.markdown("""
-<div style="background:#FFD300;padding:6px 10px;border-radius:4px;margin-bottom:15px;text-align:center;">
-    <span style="color:#000;font-weight:500;font-size:17px;font-family:'Georgia',serif;">
-        🏐 Ballymore Supporters Draw - Sellers Online Entry 🏐
-    </span>
-</div>
+st.markdown(f"""
+<header class="app-header">
+    <img src="data:image/png;base64,{logo}" alt="Ballymore GAA crest">
+    <div>
+        <h1>Ballymore Supporters Draw</h1>
+        <p>Seller ticket entry and draw management</p>
+    </div>
+</header>
 """, unsafe_allow_html=True)
 
 
@@ -129,138 +110,6 @@ def ensure_seller_user(new_seller_name):
 
 records = get_records()
 ticket_count = len(records)
-# --------------------------------------------------
-# CSS STYLE For Buttons
-# --------------------------------------------------
-st.markdown("""
-<style>
-
-/* ===========================
-   STANDARD BUTTONS
-   =========================== */
-
-.stButton > button {
-    background-color: #FFD300 !important;
-    color: #000000 !important;
-    font-weight: bold !important;
-    border-radius: 8px !important;
-    border: 1px solid #b8860b !important;
-}
-
-.stButton > button p {
-    color: #000000 !important;
-}
-
-.stButton > button:hover {
-    background-color: #ffea00 !important;
-    color: #000000 !important;
-    transform: translateY(-1px);
-    transition: 0.2s;
-}
-
-/* ===========================
-   FORM BUTTONS
-   =========================== */
-
-div[data-testid="stForm"] button {
-    background-color: #FFD300 !important;
-    color: #000000 !important;
-    font-weight: bold !important;
-    border-radius: 8px !important;
-    border: 1px solid #b8860b !important;
-}
-
-div[data-testid="stForm"] button p {
-    color: #000000 !important;
-}
-
-div[data-testid="stForm"] button:hover {
-    background-color: #ffea00 !important;
-    transform: translateY(-1px);
-    transition: 0.2s;
-}
-
-/* ===========================
-   LINK BUTTONS
-   =========================== */
-
-[data-testid="stLinkButton"] a {
-    background-color: #FFD300 !important;
-    color: #000000 !important;
-    font-weight: bold !important;
-    border-radius: 8px !important;
-    border: 1px solid #b8860b !important;
-}
-
-[data-testid="stLinkButton"] a,
-[data-testid="stLinkButton"] a * {
-    color: #000000 !important;
-    font-weight: bold !important;
-}
-
-[data-testid="stLinkButton"] a:hover {
-    background-color: #ffea00 !important;
-    color: #000000 !important;
-    transform: translateY(-1px);
-    transition: 0.2s;
-}
-
-/* ===========================
-   METRICS
-   =========================== */
-
-[data-testid="stMetric"] {
-    text-align: center;
-    background-color: #FFF8CC;
-    border: 1px solid #FFD700;
-    border-radius: 10px;
-    padding: 10px;
-}
-
-[data-testid="stMetric"] *,
-[data-testid="stMetricLabel"],
-[data-testid="stMetricValue"] {
-    color: #000000 !important;
-}
-
-/* ===========================
-   TABS
-   =========================== */
-
-/* All tabs */
-.stTabs [data-baseweb="tab"] {
-    min-height: 50px;
-    padding: 0 20px;
-    color: #555555 !important;
-    font-weight: 500 !important;
-    border-radius: 8px 8px 0 0;
-}
-
-/* Hover */
-.stTabs [data-baseweb="tab"]:hover {
-    color: #000000 !important;
-}
-
-/* ACTIVE TAB */
-.stTabs [aria-selected="true"] {
-    color: #B8860B !important;      /* Dark gold text */
-    font-weight: 800 !important;
-}
-
-/* Active tab text */
-.stTabs [aria-selected="true"] p {
-    color: #B8860B !important;
-    font-weight: 800 !important;
-}
-
-/* Yellow underline */
-.stTabs [data-baseweb="tab-highlight"] {
-    background-color: #FFD300 !important;
-    height: 4px !important;
-}
-
-</style>
-""", unsafe_allow_html=True)
 # --------------------------------------------------
 # FIND TOTAL WEB TICKET NUMBERS
 # --------------------------------------------------
@@ -445,6 +294,7 @@ with tab1:
 
         ):
 
+        st.markdown("#### Ticket details")
         name = st.text_input(
             "Name",
             key="name"
@@ -465,6 +315,7 @@ with tab1:
             key="ticket"
         )
 
+        st.markdown("#### Payment and notes")
         paid = st.selectbox(
             "Payment Method",
             [
