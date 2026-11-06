@@ -113,6 +113,20 @@ def get_last_year_records():
 def load_users():
     return users_sheet.get_all_records()
 
+# Add a new seller to the Users sheet once, with a blank PIN for an admin to set.
+def ensure_seller_user(new_seller_name):
+    seller_key = new_seller_name.strip().casefold()
+    user_records = users_sheet.get_all_records()
+
+    if any(
+        str(user.get("Username", "")).strip().casefold() == seller_key
+        for user in user_records
+    ):
+        return
+
+    users_sheet.append_row([new_seller_name, ""])
+    load_users.clear()
+
 records = get_records()
 ticket_count = len(records)
 # --------------------------------------------------
@@ -495,6 +509,7 @@ with tab1:
         st.session_state.show_success = False
 
         name = name.strip()
+        seller = seller.strip()
         phone = phone.strip().replace(" ", "")
         ticket = ticket.strip()
 
@@ -543,6 +558,9 @@ with tab1:
 
             else:
 
+                # Register new sellers before saving their ticket entry.
+                ensure_seller_user(seller)
+
                 timestamp = datetime.now().strftime(
                     "%d/%m/%Y %H:%M"
                 )
@@ -564,6 +582,50 @@ with tab1:
                 
                 
                 st.rerun()
+
+    if st.session_state.seller_pin_ok:
+        st.markdown("---")
+        st.subheader("View tickets by seller")
+
+        seller_names_by_key = {}
+        for row in records:
+            seller_name = str(row.get("Seller Name", "")).strip()
+            if seller_name:
+                seller_names_by_key.setdefault(
+                    seller_name.casefold(),
+                    seller_name
+                )
+
+        seller_names = sorted(
+            seller_names_by_key.values(),
+            key=str.casefold
+        )
+
+        if seller_names:
+            selected_seller = st.selectbox(
+                "Select a seller",
+                seller_names,
+                key="entered_tickets_seller"
+            )
+
+            ticket_rows = [
+                {
+                    "Ticket Number": str(row.get("Ticket Number", "")).strip(),
+                    "Name on Ticket": str(row.get("Name", "")).strip()
+                }
+                for row in records
+                if str(row.get("Seller Name", "")).strip().casefold()
+                == selected_seller.casefold()
+            ]
+
+            st.dataframe(
+                pd.DataFrame(ticket_rows),
+                hide_index=True,
+                width="stretch",
+                alt="Ticket numbers and ticket holder names entered by the selected seller"
+            )
+        else:
+            st.info("No seller entries yet.")
 
 # --------------------------------------------------
 # LAST YEAR'S SALES TAB
@@ -952,47 +1014,63 @@ with tab5:
     # SELLER LOGIN
     # -------------------------
     if not st.session_state.seller_logged_in:
-        
-        with st.form("seller_login_form"):
+        users = load_users()
+        # Use the Users sheet as the source for seller names in the login dropdown.
+        seller_names = sorted(
+            {
+                str(user.get("Username", "")).strip()
+                for user in users
+                if str(user.get("Username", "")).strip()
+            },
+            key=str.casefold
+        )
 
-            seller_username = st.text_input(
-                "Seller Username"
-            )
+        if seller_names:
+            with st.form("seller_login_form"):
 
-            seller_pin = st.text_input(
-                "Seller PIN",
-                type="password"
-            )
+                seller_username = st.selectbox(
+                    "Seller Name",
+                    seller_names
+                )
 
-            seller_login = st.form_submit_button(
-                "Seller Login"
-            )
+                seller_pin = st.text_input(
+                    "Seller PIN",
+                    type="password"
+                )
 
-        if seller_login:
+                seller_login = st.form_submit_button(
+                    "Seller Login"
+                )
 
-            users = load_users()
+            if seller_login:
+                selected_user = next(
+                    (
+                        user
+                        for user in users
+                        if str(user.get("Username", "")).strip().casefold()
+                        == seller_username.casefold()
+                    ),
+                    None
+                )
+                stored_pin = (
+                    str(selected_user.get("PIN", "")).strip()
+                    if selected_user
+                    else ""
+                )
 
-            match = next(
-                (
-                    user
-                    for user in users
-                    if user["Username"].strip().lower()
-                    == seller_username.strip().lower()
-                    and str(user["PIN"]).strip()
-                    == seller_pin.strip()
-                ),
-                None,
-            )
-
-            if match:
-
-                st.session_state.seller_logged_in = True
-                st.session_state.seller_name = match["Username"]
-
-                st.rerun()
-
-            else:
-                st.error("Invalid username or PIN")
+                # Sellers without an assigned PIN cannot log in until an admin sets one.
+                if stored_pin and stored_pin == seller_pin.strip():
+                    st.session_state.seller_logged_in = True
+                    st.session_state.seller_name = seller_username
+                    st.rerun()
+                elif not stored_pin:
+                    st.warning(
+                        "A PIN has not been assigned to this seller yet. Please contact an administrator."
+                    )
+                else:
+                    st.error("Invalid PIN")
+        else:
+            st.info("No sellers are registered yet.")
 
     # -------------------------
     # SELLER AREA
@@ -1021,6 +1099,7 @@ with tab5:
 
         all_records = get_records()
 
+        # Only show and allow payment updates for the logged-in seller's tickets.
         seller_records = [
             row
             for row in all_records
