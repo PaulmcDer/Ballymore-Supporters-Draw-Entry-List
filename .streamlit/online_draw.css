@@ -1,0 +1,257 @@
+:root {
+    --draw-gold: #ffd300;
+    --draw-gold-soft: #fff8cc;
+    --draw-gold-border: #e8d27b;
+    --draw-ink: #1d1b16;
+    --draw-muted: #625f56;
+    --draw-paper: #fffefa;
+}
+
+.stApp {
+    background: var(--draw-paper);
+    color: var(--draw-ink);
+}
+
+[data-testid="stSidebar"] {
+    background: #faf8f0;
+    border-left: 1px solid #e8e2d2;
+}
+
+[data-testid="stMain"] > div {
+    padding-top: 1.25rem;
+}
+
+.draw-hero {
+    display: flex;
+    align-items: center;
+    gap: 1.15rem;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    background: linear-gradient(120deg, #fff2a1 0%, #fffbee 76%);
+    border: 1px solid var(--draw-gold-border);
+    border-radius: 18px;
+}
+
+.draw-hero img {
+    width: 82px;
+    height: 82px;
+    flex: 0 0 auto;
+    object-fit: contain;
+}
+
+.draw-hero h1 {
+    margin: 0;
+    color: var(--draw-ink);
+    font-size: clamp(1.55rem, 4vw, 2.25rem);
+    line-height: 1.15;
+}
+
+.draw-hero p {
+    margin: 0.5rem 0 0;
+    color: var(--draw-muted);
+    font-size: 1rem;
+}
+
+.draw-offer {
+    padding: 1rem 1.15rem;
+    margin: 0 0 1.5rem;
+    background: #fff;
+    border: 1px solid #e8e2d2;
+    border-radius: 14px;
+}
+
+.draw-offer h3 {
+    margin: 0 0 0.6rem;
+    color: var(--draw-ink);
+}
+
+.draw-offer p {
+    margin: 0.3rem 0;
+    color: var(--draw-muted);
+}
+
+.draw-section-title {
+    margin: 1.4rem 0 0.35rem;
+    color: var(--draw-ink);
+}
+
+.draw-section-caption {
+    margin: 0 0 0.8rem;
+    color: var(--draw-muted);
+}
+
+.price-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 1rem;
+    margin: 0.25rem 0 1.25rem;
+    background: var(--draw-gold-soft);
+    border: 1px solid var(--draw-gold-border);
+    border-radius: 12px;
+}
+
+.price-summary span {
+    color: var(--draw-muted);
+}
+
+.price-summary strong {
+    color: var(--draw-ink);
+    font-size: 1.3rem;
+}
+
+.stButton > button,
+div[data-testid="stForm"] button,
+[data-testid="stLinkButton"] a {
+    min-height: 2.8rem;
+    background: var(--draw-gold) !important;
+    color: var(--draw-ink) !important;
+    border: 1px solid #ae8700 !important;
+    border-radius: 10px !important;
+    font-weight: 750 !important;
+    transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.stButton > button *,
+div[data-testid="stForm"] button *,
+[data-testid="stLinkButton"] a,
+[data-testid="stLinkButton"] a * {
+    color: var(--draw-ink) !important;
+    font-weight: 750 !important;
+}
+
+.stButton > button:hover,
+div[data-testid="stForm"] button:hover,
+[data-testid="stLinkButton"] a:hover {
+    background: #ffe66b !important;
+    box-shadow: 0 4px 12px #00000018;
+    transform: translateY(-1px);
+}
+
+.stButton > button:focus-visible,
+div[data-testid="stForm"] button:focus-visible,
+[data-testid="stLinkButton"] a:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid #665000 !important;
+    outline-offset: 2px;
+}
+
+[data-testid="stTextInput"] input,
+[data-testid="stSelectbox"] [role="combobox"] {
+    min-height: 2.8rem;
+    border-color: #bdb69e !important;
+    border-radius: 9px !important;
+}
+
+[data-testid="stMetric"] {
+    padding: 1rem;
+    background: var(--draw-gold-soft);
+    border: 1px solid var(--draw-gold-border);
+    border-radius: 12px;
+}
+
+[data-testid="stMetric"] *,
+[data-testid="stMetricLabel"],
+[data-testid="stMetricValue"] {
+    color: var(--draw-ink) !important;
+}
+
+[data-testid="stAlert"] {
+    border-radius: 10px;
+}
+
+.st-key-purchase-summary,
+.st-key-purchase-confirm {
+    height: 100%;
+    padding: 1rem;
+    background: #fffdf5;
+    border: 1px solid #e8e2d2;
+    border-radius: 12px;
+}
+
+.st-key-purchase-summary h3,
+.st-key-purchase-confirm h3 {
+    margin-top: 0;
+}
+
+.ticket-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 1rem;
+    margin: 0.6rem 0;
+    background: #fffdf5;
+    border: 1px solid var(--draw-gold-border);
+    border-left: 5px solid var(--draw-gold);
+    border-radius: 10px;
+}
+
+.ticket-card strong {
+    color: var(--draw-ink);
+    font-size: 1.05rem;
+}
+
+.ticket-card span {
+    color: var(--draw-muted);
+    text-align: right;
+}
+
+.draw-confirmation {
+    padding: 1rem 1.15rem;
+    margin: 1rem 0;
+    background: var(--draw-gold-soft);
+    border: 1px solid var(--draw-gold-border);
+    border-radius: 12px;
+}
+
+.draw-confirmation strong {
+    color: var(--draw-ink);
+}
+
+@media (max-width: 640px) {
+    [data-testid="stMain"] > div {
+        padding: 0.9rem 0.75rem 0;
+    }
+
+    .draw-hero {
+        gap: 0.8rem;
+        padding: 1rem;
+        border-radius: 14px;
+    }
+
+    .draw-hero img {
+        width: 58px;
+        height: 58px;
+    }
+
+    .draw-offer {
+        padding: 0.85rem;
+    }
+
+    .st-key-purchase-summary,
+    .st-key-purchase-confirm {
+        padding: 0.85rem;
+    }
+
+    .ticket-card {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+
+    .ticket-card span {
+        text-align: left;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
+}

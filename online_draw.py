@@ -15,6 +15,8 @@ import streamlit as st
 import stripe
 import gspread
 import smtplib
+import base64
+import html
 
 from datetime import datetime
 from email.message import EmailMessage
@@ -30,15 +32,6 @@ st.set_page_config(
     page_icon="logo.png",
     layout="centered"
 )
-st.logo("logo.png")
-    
-st.markdown("""
-<div style="background:#FFD300;padding:6px 10px;border-radius:4px;margin-bottom:15px;text-align:center;">
-     <span style="color:#000;font-weight:500;font-size:17px;font-family: Georgia, serif;">
-        🏐 Ballymore Supporters Draw — Online Ticket Purchase 🏐
-    </span>
-</div>
-""", unsafe_allow_html=True)
 
 # ==================================================
 # APP SETTINGS / CONSTANTS
@@ -53,69 +46,25 @@ stripe.api_key = st.secrets["STRIPE_SECRET_KEY"]
 # CUSTOM STYLES
 # ==================================================
 
-with open(".streamlit/style.css") as f:
+with open(".streamlit/online_draw.css", encoding="utf-8") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
-st.markdown("""
-<style>
+with open("logo.png", "rb") as f:
+    logo = base64.b64encode(f.read()).decode("ascii")
 
-/* Buttons */
-.stButton > button,
-div[data-testid="stForm"] button {
-    background-color: #FFD700 !important;
-    color: black !important;
-    font-weight: bold !important;
-    border-radius: 8px !important;
-    border: 1px solid #b8860b !important;
-}
-
-.stButton > button *,
-div[data-testid="stForm"] button * {
-    color: black !important;
-}
-
-/* Centre metric */
-[data-testid="stMetric"] {
-    text-align: center;
-}
-
-[data-testid="stMetric"] {
-    text-align: center;
-    background-color: #FFF8CC;
-    border: 1px solid #FFD700;
-    border-radius: 10px;
-    padding: 10px;
-}
-
-[data-testid="stMetric"] {
-    text-align: center;
-    background-color: #FFF8CC;
-    border: 1px solid #FFD700;
-    border-radius: 10px;
-    padding: 10px;
-}
-
-/* Metric label */
-[data-testid="stMetricLabel"] {
-    color: #000000 !important;
-}
-
-/* Metric value */
-[data-testid="stMetricValue"] {
-    color: #000000 !important;
-}
-
-/* Any text inside metric */
-[data-testid="stMetric"] * {
-    color: #000000 !important;
-}
-
-.stButton > button:hover,
-[data-testid="stLinkButton"] a:hover {
-    transform: translateY(-1px);
-    transition: 0.2s;
-}
-</style>
+st.markdown(f"""
+<header class="draw-hero">
+    <img src="data:image/png;base64,{logo}" alt="Ballymore GAA crest">
+    <div>
+        <h1>Support Ballymore GAA</h1>
+        <p>Take part in our monthly supporters draw.</p>
+    </div>
+</header>
+<section class="draw-offer">
+    <h3>One ticket. Twelve monthly draws.</h3>
+    <p><strong>€100 per ticket</strong> &nbsp;·&nbsp; Monthly prizes: €1,000, €100 and €100</p>
+    <p>Choose your tickets and holder names below. Payment is securely completed with Stripe.</p>
+</section>
 """, unsafe_allow_html=True)
 
 # --------------------------------------------------
@@ -332,33 +281,23 @@ if success == "true":
     # -----------------------------------------
     # DISPLAY TICKETS
     # -----------------------------------------
-    st.success(
-    "Payment Successful ✅"
-    )
+    st.success("Payment successful")
+    st.write(f"Thank you, {full_name}, for supporting Ballymore GFC.")
+    st.subheader("Your draw entries")
 
-    st.write(
-    f"Thank you {full_name} for supporting Ballymore GFC."
-    )
-
-    st.subheader(
-        "Your Ticket Numbers"
-    )
-
-    # Display ticket numbers WITH names
     for i, ticket in enumerate(allocated_tickets):
-        st.code(f"{ticket} — {ticket_names[i]}")
+        st.markdown(
+            f'<div class="ticket-card"><strong>{html.escape(ticket)}</strong>'
+            f'<span>{html.escape(ticket_names[i])}</span></div>',
+            unsafe_allow_html=True
+        )
 
     st.markdown("""
-<div style="
-    background:#FFF8CC;
-    color:black;
-    padding:12px;
-    border-radius:10px;
-    border-left:5px solid #FFD700;
-">
-    ✅ Your tickets have been recorded and entered into the Ballymore Supporters Draw.
-</div>
-""", unsafe_allow_html=True)
+    <div class="draw-confirmation">
+        <strong>Your tickets are in the draw.</strong><br>
+        Please check the email address you provided for a confirmation.
+    </div>
+    """, unsafe_allow_html=True)
 
 
     # -----------------------------------------
@@ -386,7 +325,6 @@ if success == "true":
     )
     get_ticket_numbers.clear()
     ticket_numbers = get_ticket_numbers()
-    ticket_count = len(ticket_numbers)
     send_confirmation_email(
         email,
         full_name,
@@ -452,93 +390,34 @@ def create_checkout_session(
     return session.url
 
 # --------------------------------------------------
-# FIND NEXT WEB TICKET NUMBER
-# --------------------------------------------------
-
-web_numbers = []
-
-for ticket in ticket_numbers:
-    ticket = str(ticket)
-
-    if ticket.startswith("WEB-"):
-        try:
-            web_numbers.append(
-                int(ticket.removeprefix("WEB-"))
-            )
-        except ValueError:
-            pass
-
-next_web_ticket = max(
-    web_numbers,
-    default=0
-) + 1
-
-online_ticket_count = len(web_numbers)
-
-# --------------------------------------------------
 # SIDEBAR CONTENT
 # --------------------------------------------------
 with st.sidebar:
-
-    col1, col2, col3 = st.columns([1,2,1])
-
-    with col2:
-        st.image("logo.png", width=120)
 
     st.markdown(
         "<h3 style='text-align:center;'>Ballymore GAA Draw Information</h3>",
         unsafe_allow_html=True
     )
-    st.metric("Total Online Tickets Purchased", online_ticket_count)
-    st.metric("Total Ticket Count", ticket_count)
-    st.metric("Next Online Ticket Number Available", f"WEB-{next_web_ticket:03d}")
-        
-    st.markdown("---")
-    
     st.markdown("""
-<div style="
-    background:#FFD700;
-    padding:15px;
-    border-radius:10px;
-    border:2px solid #b8860b;
-    text-align:center;
-    color:black;
-">
-    💳 1 Ticket €100<br>
-    ✅ 12 Monthly Draws<br>
-    🥇 €1,000 &nbsp; 🥈 €100 &nbsp; 🥉 €100
-</div>
-""", unsafe_allow_html=True)
+    <div class="draw-offer">
+        <h3>About the draw</h3>
+        <p>€100 per ticket</p>
+        <p>12 monthly draws</p>
+        <p>Monthly prizes: €1,000, €100 and €100</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-    st.markdown("---")
-
-    st.caption("""
-    Ballymore GFC  
-    Supporters Draw  
-    ballymoredraw@gmail.com
-    """)
+    st.caption("Questions? Contact ballymoredraw@gmail.com")
     st.markdown("---")
 
 # --------------------------------------------------
 # HEADER
 # --------------------------------------------------
-st.markdown("""
-<div style="
-    background:#FFF8CC;
-    color:black;
-    padding:12px;
-    border-radius:10px;
-    border:2px solid #FFD700;
-    text-align:center;
-    font-style: italic;
-    font-family: Georgia, serif;
-    font-size:15px;
-">
-    🎟 Select your tickets, enter your details and complete the secure Stripe payment.
-</div>
-""", unsafe_allow_html=True)
-
-st.markdown("---")
+st.markdown(
+    '<h2 class="draw-section-title">Choose your tickets</h2>'
+    '<p class="draw-section-caption">Select a quantity to see your total.</p>',
+    unsafe_allow_html=True
+)
 
 #--------------------------------------------------
 #Ticket Calculation
@@ -551,26 +430,16 @@ quantity = st.selectbox(
 total_cost = quantity * 100
 
 st.markdown(
-    f"**Total Cost: €{total_cost:,}**"
-)
-
-estimated_tickets = []
-
-for i in range(quantity):
-    estimated_tickets.append(
-        f"WEB-{next_web_ticket + i:03d}"
-    )
-
-st.write(
-    f"🎟 Reserved Ticket Numbers: {len(estimated_tickets)}"
+    f'<div class="price-summary"><span>{quantity} ticket(s) selected</span>'
+    f'<strong>Total €{total_cost:,}</strong></div>',
+    unsafe_allow_html=True
 )
 
 # ==================================================
 # TICKET HOLDER NAMES
 # ==================================================
 
-st.write("Ticket Holder Names")
-
+st.markdown("#### Ticket holder names")
 use_primary_name = st.checkbox(
     "Use primary name for all tickets",
     value=True
@@ -584,6 +453,7 @@ with st.form(
     "online_purchase_form",
     clear_on_submit=False
 ):
+    st.markdown("#### Your details")
     full_name = st.text_input(
         "Full Name"
     )
@@ -595,7 +465,6 @@ with st.form(
     email = st.text_input(
     "Email Address"
     )
-    st.write("Ticket Holder Names")
 
     ticket_names = []
 
@@ -617,35 +486,25 @@ with st.form(
     col1, col2 = st.columns([1.3, 1])
 
     with col1:
-
-        st.markdown("### Purchase Summary")
-
-        st.write(
-            f"🎟️ Tickets: {quantity}"
-        )
-
-        st.write(
-            f"💰 Total Cost: €{total_cost}"
-        )
-
-        st.write(
-            "🔢 Estimated Numbers:"
-        )
-
-        for ticket in estimated_tickets:
-            st.write(ticket)
+        with st.container(key="purchase-summary"):
+            st.markdown("### Purchase summary")
+            st.write(f"Tickets: **{quantity}**")
+            st.write(f"Total: **€{total_cost:,}**")
+            st.caption(
+                "Ticket numbers are assigned after successful payment."
+            )
 
     with col2:
+        with st.container(key="purchase-confirm"):
+            st.markdown("### Ready to enter?")
+            st.caption("Payment is securely processed by Stripe.")
+            accept_terms = st.checkbox(
+                "I confirm I wish to purchase these tickets"
+            )
 
-        st.markdown("### Confirm")
-
-        accept_terms = st.checkbox(
-            "I confirm I wish to purchase these tickets"
-        )
-
-        submit = st.form_submit_button(
-            "💳 Continue To Checkout"
-        )
+            submit = st.form_submit_button(
+                "Continue to secure checkout"
+            )
 # --------------------------------------------------
 # PLACEHOLDER PAYMENT LOGIC
 # --------------------------------------------------
