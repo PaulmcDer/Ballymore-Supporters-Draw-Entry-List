@@ -57,11 +57,11 @@ st.markdown(f"""
     <img src="data:image/png;base64,{logo}" alt="Ballymore GAA crest">
     <div>
         <h1>Support Ballymore GAA</h1>
-        <p>Take part in our monthly supporters draw.</p>
+        <p>12 draws a year, 12 chances to win per entry..</p>
     </div>
 </header>
 <section class="draw-offer">
-    <h3>One ticket. Twelve monthly draws.</h3>
+    <h3>Your entry for the year</h3>
     <p><strong>€100 per ticket</strong> &nbsp;·&nbsp; Monthly prizes: €1,000, €100 and €100</p>
     <p>Choose your tickets and holder names below. Payment is securely completed with Stripe.</p>
 </section>
@@ -394,6 +394,9 @@ def create_checkout_session(
 # --------------------------------------------------
 with st.sidebar:
 
+    with st.container(horizontal_alignment="center"):
+        st.image("logo.png", width=56, alt="Ballymore GAA crest")
+
     st.markdown(
         "<h3 style='text-align:center;'>Ballymore GAA Draw Information</h3>",
         unsafe_allow_html=True
@@ -402,7 +405,7 @@ with st.sidebar:
     <div class="draw-offer">
         <h3>About the draw</h3>
         <p>€100 per ticket</p>
-        <p>12 monthly draws</p>
+        <p>One ticket enters you in all 12 monthly draws for the year</p>
         <p>Monthly prizes: €1,000, €100 and €100</p>
     </div>
     """, unsafe_allow_html=True)

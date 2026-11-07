@@ -13,9 +13,12 @@ SHEET_ID = "1umG0zNs4Uz9IqfZXPXEeAgfSWoRTzDDsEwlSRC-3PnM"
 
 st.set_page_config(
     page_title="Supporters Monthly Draw Tickets",
-    page_icon="🏐",
+    page_icon="logo.png",
     layout="centered"
 )
+
+with open(".streamlit/style.css", encoding="utf-8") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 # --------------------------------------------------
 # GOOGLE SHEETS CONNECTION
@@ -37,84 +40,6 @@ sheet = client.open_by_key(SHEET_ID).worksheet("Ticket_Entries")
 
 records = sheet.get_all_records()
 ticket_count = len(records)
-
-# --------------------------------------------------
-# CSS STYLE For Buttons
-# --------------------------------------------------
-st.markdown("""
-<style>
-
-/* Normal buttons */
-.stButton > button {
-    background-color: #FFD700 !important;
-    color: black !important;
-    font-weight: bold !important;
-    border-radius: 8px !important;
-    border: 1px solid #b8860b !important;
-}
-
-/* Hover */
-.stButton > button:hover {
-    background-color: #ffea00 !important;
-    color: black !important;
-}
-
-/* Link buttons (Revolut button) */
-[data-testid="stLinkButton"] a {
-    background-color: #FFD700 !important;
-    color: black !important;
-    font-weight: bold !important;
-    border-radius: 8px !important;
-    border: 1px solid #b8860b !important;
-}
-
-/* Link button hover */
-[data-testid="stLinkButton"] a:hover {
-    background-color: #ffea00 !important;
-    color: black !important;
-}
-
-/* Form Submit Buttons */
-div[data-testid="stForm"] button {
-    background-color: #FFD700 !important;
-    color: black !important;
-    font-weight: bold !important;
-    border-radius: 8px !important;
-    border: 1px solid #b8860b !important;
-}
-
-div[data-testid="stForm"] button:hover {
-    background-color: #ffea00 !important;
-    color: black !important;
-}
-
-.stButton > button {
-    background-color: #FFD700 !important;
-    color: #000000 !important;
-    font-weight: bold !important;
-}
-
-.stButton > button p {
-    color: #000000 !important;
-}
-
-div[data-testid="stForm"] button {
-    background-color: #FFD700 !important;
-    color: #000000 !important;
-    font-weight: bold !important;
-}
-
-div[data-testid="stForm"] button p {
-    color: #000000 !important;
-}
-/* Revolut Link Button Text */
-[data-testid="stLinkButton"] a,
-[data-testid="stLinkButton"] a * {
-    color: black !important;
-    font-weight: bold !important;
-}
-</style>
-""", unsafe_allow_html=True)
 
 # --------------------------------------------------
 # Spilt for Tabs
@@ -141,22 +66,15 @@ if "save_pin_ok" not in st.session_state:
 # PAGE
 # --------------------------------------------------
 with tab1:
-    
-    col1, col2, col3 = st.columns([2, 1.5, 2])
-
-    with col2:
+    with st.container(key="entry-header"):
         st.image(
             "logo.png",
-            width=160
+            width=112,
+            alt="Ballymore GAA crest"
         )
-
-        st.metric(
-            "🎟 Tickets Entered This Year",
-            ticket_count
-        )
-    st.write("🏐 Supporters Monthly Draw Tickets 🏐")
-
-    st.caption("**Please enter the ticket holder's details below and click Submit Entry when complete**")
+        st.title("Supporters monthly draw")
+        st.caption("A draw takes place every month. Enter a ticket holder below.")
+    st.metric("Tickets entered this year", ticket_count)
         
 
     if "name" not in st.session_state:
@@ -473,7 +391,7 @@ with tab3:
     st.write("💳 Pay with Revolut")
 
     st.markdown("""
-    🎟️ **1 Ticket €100** | ✅ 12 Monthly Draws
+    🎟️ **1 Ticket €100** | A draw takes place every month
 
     Monthly prizes | 🥇 €1,000 | 🥈 €100 | 🥉 €100
     """)
@@ -560,4 +478,3 @@ st.markdown("---")
 st.caption(
     "Ballymore GAA Supporters Monthly Draw Ticket Entry System"
 )
-
