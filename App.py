@@ -708,6 +708,9 @@ with tab5:
     if "admin_update_message" not in st.session_state:
         st.session_state.admin_update_message = ""
 
+    if "admin_payment_update_message" not in st.session_state:
+        st.session_state.admin_payment_update_message = ""
+
     # -------------------------
     # ADMIN LOGIN
     # -------------------------
@@ -750,6 +753,79 @@ with tab5:
                 st.session_state.admin_pin_ok = False
                 st.rerun()
 
+        st.markdown("---")
+        st.subheader("Manage user PINs")
+
+        users = load_users()
+        user_table = [
+            {
+                "Username": str(user.get("Username", "")).strip(),
+                "PIN": str(user.get("PIN", "")).strip()
+            }
+            for user in users
+        ]
+        st.dataframe(
+            pd.DataFrame(user_table, columns=["Username", "PIN"]),
+            hide_index=True
+        )
+
+        user_names = [
+            user["Username"]
+            for user in user_table
+            if user["Username"]
+        ]
+
+        if user_names:
+            with st.form("admin_user_pin_form"):
+                selected_user = st.selectbox(
+                    "Select user",
+                    user_names
+                )
+                new_user_pin = st.text_input(
+                    "New 4-digit PIN",
+                    type="password",
+                    max_chars=4
+                ) or ""
+                update_user_pin = st.form_submit_button(
+                    "Save user PIN"
+                )
+
+            if update_user_pin:
+                if selected_user not in user_names:
+                    st.error("Select a valid user.")
+                elif (
+                    len(new_user_pin) != 4
+                    or any(digit not in "0123456789" for digit in new_user_pin)
+                ):
+                    st.error("Enter a PIN containing exactly 4 digits.")
+                else:
+                    user_row = next(
+                        (
+                            row_number
+                            for row_number, user in enumerate(users, start=2)
+                            if str(user.get("Username", "")).strip().casefold()
+                            == selected_user.casefold()
+                        ),
+                        None
+                    )
+
+                    if user_row is None:
+                        st.error("The selected user was not found in the Users sheet.")
+                    else:
+                        users_sheet.update_cell(user_row, 2, new_user_pin)
+                        load_users.clear()
+                        st.session_state.admin_update_message = (
+                            f"PIN updated for {selected_user}."
+                        )
+                        st.rerun()
+        else:
+            st.info("No users are listed in the Users sheet.")
+
+        if st.session_state.admin_update_message:
+            st.success(st.session_state.admin_update_message)
+            st.session_state.admin_update_message = ""
+
+        st.markdown("---")
         records = get_records()
 
         display_records = list(reversed(records))
@@ -802,11 +878,11 @@ with tab5:
                 "Update Payment Status"
             )
 
-        if st.session_state.admin_update_message:
+        if st.session_state.admin_payment_update_message:
             st.success(
-                st.session_state.admin_update_message
+                st.session_state.admin_payment_update_message
             )
-            st.session_state.admin_update_message = ""
+            st.session_state.admin_payment_update_message = ""
 
         if update_status:
 
@@ -835,7 +911,7 @@ with tab5:
                     new_status
                 )
 
-                st.session_state.admin_update_message = (
+                st.session_state.admin_payment_update_message = (
                     f"✅ {selected_ticket} updated successfully to '{new_status}'"
                 )
                 get_records.clear()
@@ -968,7 +1044,6 @@ with tab5:
 
             results.append(
                 {
-                    "Seller Name": row["Seller Name"],
                     "Ticket Holder": row["Name"],
                     "Ticket Number": row["Ticket Number"],
                     "Paid": row["Paid"]
@@ -990,7 +1065,7 @@ with tab5:
         )
 
         ticket_options = [
-            f"{r['Ticket Number']} | {r['Name']} | {r['Seller Name']}"
+            f"{r['Ticket Number']} | {r['Name']}"
             for r in display_records
         ]
 
