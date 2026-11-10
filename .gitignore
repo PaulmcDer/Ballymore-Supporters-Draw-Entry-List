@@ -14,3 +14,13 @@ venv/
 .venv/
 venu/
 .idea/
+
+# Local documentation (keep local only, don't push to GitHub)
+START_HERE.md
+README_ENHANCEMENTS.md
+VISUAL_GUIDE.md
+IMPROVEMENTS_SUMMARY.md
+QUICK_GUIDE.md
+CHANGES_CHECKLIST.md
+COMMERCIAL_IMPROVEMENTS.md
+MOBILE_GUIDE.md

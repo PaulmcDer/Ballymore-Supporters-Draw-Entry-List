@@ -7,6 +7,11 @@
     --ballymore-muted: #626262;
     --ballymore-border: #e6dfc3;
     --ballymore-surface: #ffffff;
+    --ballymore-success: #10b981;
+    --ballymore-warning: #f59e0b;
+    --ballymore-danger: #ef4444;
+    --ballymore-info: #3b82f6;
+    --ballymore-light-gray: #f5f5f5;
 }
 
 .stApp {
@@ -28,12 +33,13 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 1rem 1.25rem;
-    margin: 0 0 1.5rem;
+    padding: 1.25rem 1.5rem;
+    margin: 0 0 2rem;
     background: linear-gradient(110deg, #fff4ad 0%, #fffbea 72%);
     border: 1px solid #ead98a;
     border-left: 6px solid var(--ballymore-gold);
-    border-radius: 14px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .app-header img {
@@ -48,6 +54,7 @@
     color: var(--ballymore-ink);
     font-size: clamp(1.25rem, 3vw, 1.8rem);
     line-height: 1.2;
+    font-weight: 700;
 }
 
 .app-header p {
@@ -56,25 +63,73 @@
     font-size: 0.95rem;
 }
 
+/* Form styling */
+form {
+    background: var(--ballymore-light-gray);
+    padding: 1.5rem;
+    border-radius: 10px;
+    border: 1px solid #e8e8e8;
+}
+
+[data-testid="stForm"] {
+    background: var(--ballymore-light-gray);
+    padding: 1.5rem !important;
+    border-radius: 10px !important;
+    border: 1px solid #e8e8e8 !important;
+}
+
+/* Improved input styling */
+[data-testid="stTextInput"] input,
+[data-testid="stTextArea"] textarea,
+[data-testid="stSelectbox"] [role="combobox"],
+[data-testid="stNumberInput"] input {
+    border: 2px solid #d0d0d0 !important;
+    border-radius: 8px !important;
+    padding: 10px 12px !important;
+    font-size: 0.95rem !important;
+    transition: border-color 160ms ease;
+}
+
+[data-testid="stTextInput"] input:focus,
+[data-testid="stTextArea"] textarea:focus,
+[data-testid="stSelectbox"] [role="combobox"]:focus,
+[data-testid="stNumberInput"] input:focus {
+    border-color: var(--ballymore-gold) !important;
+    box-shadow: 0 0 0 3px rgba(255, 211, 0, 0.1) !important;
+}
+
+/* Label styling */
+.stTextInput label,
+.stTextArea label,
+.stSelectbox label,
+.stNumberInput label {
+    font-weight: 600 !important;
+    color: var(--ballymore-ink) !important;
+    margin-bottom: 0.5rem !important;
+    font-size: 0.95rem !important;
+}
+
+/* Required field indicator */
+.required::after {
+    content: " *";
+    color: var(--ballymore-danger);
+    font-weight: 700;
+}
+
 /* Buttons */
 .stButton > button,
 div[data-testid="stForm"] button,
 [data-testid="stLinkButton"] a {
     min-height: 2.7rem;
+    padding: 0.75rem 1.5rem !important;
     background: var(--ballymore-gold) !important;
     color: var(--ballymore-ink) !important;
     border: 1px solid #b18b00 !important;
-    border-radius: 9px !important;
+    border-radius: 8px !important;
     font-weight: 700 !important;
-    transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
-}
-
-.stButton > button p,
-div[data-testid="stForm"] button p,
-[data-testid="stLinkButton"] a,
-[data-testid="stLinkButton"] a * {
-    color: var(--ballymore-ink) !important;
-    font-weight: 700 !important;
+    font-size: 1rem !important;
+    transition: all 160ms ease;
+    cursor: pointer;
 }
 
 .stButton > button:hover,
@@ -82,33 +137,44 @@ div[data-testid="stForm"] button:hover,
 [data-testid="stLinkButton"] a:hover {
     background: #ffe66b !important;
     border-color: var(--ballymore-gold-dark) !important;
-    box-shadow: 0 3px 10px #00000018;
-    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
 }
 
-.stButton > button:focus-visible,
-div[data-testid="stForm"] button:focus-visible,
-[data-testid="stLinkButton"] a:focus-visible,
-input:focus-visible,
-textarea:focus-visible {
-    outline: 3px solid #665000 !important;
-    outline-offset: 2px;
+.stButton > button:active,
+div[data-testid="stForm"] button:active {
+    transform: translateY(0);
 }
 
-/* Inputs */
-[data-testid="stTextInput"] input,
-[data-testid="stTextArea"] textarea,
-[data-testid="stSelectbox"] [role="combobox"] {
-    border-color: #bdb69e !important;
-    border-radius: 8px !important;
+/* Secondary button variant */
+.stButton > button[aria-label*="Logout"],
+.stButton > button:nth-child(2) {
+    background: #f0f0f0 !important;
+    border-color: #d0d0d0 !important;
+    color: var(--ballymore-ink) !important;
 }
 
-/* Metrics and notices */
+.stButton > button[aria-label*="Logout"]:hover,
+.stButton > button:nth-child(2):hover {
+    background: #e8e8e8 !important;
+}
+
+/* Alert messages - Success */
+[data-testid="stAlert"] {
+    border-radius: 10px;
+    border-left: 5px solid var(--ballymore-success) !important;
+    background: #ecfdf5 !important;
+    padding: 1rem !important;
+    margin: 1rem 0 !important;
+}
+
+/* Metrics and info cards */
 [data-testid="stMetric"] {
-    padding: 1rem;
+    padding: 1.25rem;
     background: var(--ballymore-gold-soft);
     border: 1px solid #ead98a;
-    border-radius: 12px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
 [data-testid="stMetricLabel"],
@@ -117,21 +183,28 @@ textarea:focus-visible {
     color: var(--ballymore-ink) !important;
 }
 
+/* Info boxes */
 [data-testid="stAlert"] {
     border-radius: 10px;
+    padding: 1rem !important;
+    margin: 1rem 0 !important;
 }
 
 /* Tabs */
 .stTabs [data-baseweb="tab-list"] {
-    gap: 0.35rem;
+    gap: 0.5rem;
+    border-bottom: 2px solid #e6dfc3;
+    padding-bottom: 0;
 }
 
 .stTabs [data-baseweb="tab"] {
     min-height: 48px;
-    padding: 0 1rem;
+    padding: 0.75rem 1.25rem !important;
     color: var(--ballymore-muted) !important;
-    border-radius: 9px 9px 0 0;
+    border-radius: 8px 8px 0 0;
     font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    transition: all 160ms ease;
 }
 
 .stTabs [data-baseweb="tab"]:hover {
@@ -149,6 +222,7 @@ textarea:focus-visible {
 .stTabs [data-baseweb="tab-highlight"] {
     height: 4px !important;
     background: var(--ballymore-gold) !important;
+    border-radius: 2px;
 }
 
 /* Tables */
@@ -156,17 +230,58 @@ textarea:focus-visible {
     border: 1px solid var(--ballymore-border);
     border-radius: 10px;
     overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
-@media (max-width: 640px) {
+/* Dividers */
+hr {
+    border-color: #e6dfc3 !important;
+    margin: 1.5rem 0 !important;
+}
+
+/* Help text */
+.stTextInput div > small,
+.stSelectbox div > small,
+.stTextArea div > small {
+    color: var(--ballymore-muted) !important;
+    font-size: 0.85rem !important;
+}
+
+/* Sidebar widgets */
+.stSidebar [data-testid="stMetric"] {
+    background: #fff9df;
+    border: 1px solid #ead98a;
+    margin-bottom: 1rem;
+}
+
+/* Subheader styling */
+h2, h3 {
+    color: var(--ballymore-ink) !important;
+    font-weight: 700 !important;
+    margin-top: 1.5rem !important;
+    margin-bottom: 1rem !important;
+}
+
+/* Link styling */
+a {
+    color: #3b82f6 !important;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
     [data-testid="stMain"] > div {
         padding: 1rem 0.75rem 0;
     }
 
     .app-header {
         gap: 0.75rem;
-        padding: 0.85rem;
-        margin-bottom: 1rem;
+        padding: 0.85rem 1rem;
+        margin-bottom: 1.5rem;
     }
 
     .app-header img {
@@ -174,9 +289,23 @@ textarea:focus-visible {
         height: 52px;
     }
 
+    .app-header h1 {
+        font-size: 1.3rem;
+    }
+
     .stTabs [data-baseweb="tab"] {
         min-height: 44px;
-        padding: 0 0.5rem;
-        font-size: 0.85rem;
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.85rem !important;
+    }
+
+    [data-testid="stForm"] {
+        padding: 1rem !important;
+    }
+
+    .stButton > button,
+    div[data-testid="stForm"] button {
+        min-height: 2.5rem;
+        padding: 0.65rem 1.25rem !important;
     }
 }

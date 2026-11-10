@@ -12,9 +12,10 @@ from datetime import datetime
 SHEET_ID = "1umG0zNs4Uz9IqfZXPXEeAgfSWoRTzDDsEwlSRC-3PnM"
 
 st.set_page_config(
-    page_title="Supporters Monthly Draw Tickets",
+    page_title="Ballymore Draw Management",
     page_icon="logo.png",
-    layout="centered"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 st.logo("logo.png")
 import base64
@@ -267,21 +268,18 @@ with tab1:
 
     if not st.session_state.seller_pin_ok:
         
-        #This is html which allows colour options#
         st.markdown("""
 <div style="
-    background:#FFF8CC;
-    color:black;
-    padding:14px;
-    border-radius:10px;
-    border:2px solid #FFD700;
-    text-align:center;
-    font-style: italic;
-    font-family: 'Georgia', serif;
-    font-weight:500;
-    font-size: 15px;
+    background: #fff8cc;
+    color: #171717;
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+    border: 2px solid #ffd300;
+    text-align: center;
+    font-weight: 500;
+    font-size: 0.95rem;
 ">
-    🔑 Enter Seller PIN to enable ticket entry and for viewing seller tickets.
+    🔑 <strong>Enter your Seller PIN</strong> to begin entering tickets.
 </div>
 """, unsafe_allow_html=True)
 # --------------------------------------------------
@@ -291,52 +289,75 @@ with tab1:
     with st.form(
         "draw_entry_form",
         clear_on_submit=False
-
         ):
 
-        st.markdown("#### Ticket details")
-        name = st.text_input(
-            "Name",
-            key="name"
-        )
+        st.markdown("#### 📝 Ticket Holder Information")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            name = st.text_input(
+                "Full Name *",
+                key="name",
+                help="Name of the ticket holder"
+            )
+        with col2:
+            phone = st.text_input(
+                "Contact Number *",
+                key="phone",
+                help="10-digit mobile number (e.g., 0851234567)",
+                placeholder="085..."
+            )
 
-        seller = st.text_input(
-            "Seller Name (Required)",
-            key="seller"
-        )
+        col1, col2 = st.columns(2)
+        with col1:
+            seller = st.text_input(
+                "Seller Name *",
+                key="seller",
+                help="Your name as the ticket seller"
+            )
+        with col2:
+            ticket = st.text_input(
+                "Ticket Number *",
+                key="ticket",
+                help="E.g., T001 or WEB-001 (T prefix added automatically)",
+                placeholder="001"
+            )
 
-        phone = st.text_input(
-            "Ticket Holder Contact Number",
-            key="phone"
-        )
-
-        ticket = st.text_input(
-            "Ticket Number",
-            key="ticket"
-        )
-
-        st.markdown("#### Payment and notes")
-        paid = st.selectbox(
-            "Payment Method",
-            [
-                "Not Paid",
-                "Paid by revolut",
-                "Paid by BOI",
-                "Paid by Cash/Cheque",
-            ],
-            key= "paid"
-        )
+        st.markdown("---")
+        st.markdown("#### 💳 Payment Details")
+        
+        col1, col2 = st.columns([1.5, 1])
+        with col1:
+            paid = st.selectbox(
+                "Payment Status *",
+                [
+                    "Not Paid",
+                    "Paid by Revolut",
+                    "Paid by BOI",
+                    "Paid by Cash/Cheque",
+                ],
+                key="paid"
+            )
+        with col2:
+            st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
 
         comments = st.text_area(
-            "Comments / Notes (Optional)",
+            "Notes (Optional)",
+            key="comments",
             max_chars=200,
-            key= "comments"
+            placeholder="Add any additional notes here...",
+            height=80
         )
 
-        submit = st.form_submit_button(
-            "Submit Entry",
-            disabled=not st.session_state.seller_pin_ok
-        )
+        st.markdown("---")
+        
+        col1, col2, col3 = st.columns([1, 1, 2])
+        with col2:
+            submit = st.form_submit_button(
+                "✅ Submit Entry",
+                disabled=not st.session_state.seller_pin_ok,
+                use_container_width=True
+            )
 
 
 #--------------------------------------------------
@@ -344,10 +365,7 @@ with tab1:
 #--------------------------------------------------
 
     if st.session_state.show_success:
-
-        st.success(
-                "✅ Entry submitted successfully. You can now enter another ticket if required."
-        )
+        st.success("✅ Entry submitted successfully! Ready to enter another ticket?")
         st.session_state.show_success = False
 
 # --------------------------------------------------
@@ -364,50 +382,35 @@ with tab1:
         phone = phone.strip().replace(" ", "")
         ticket = ticket.strip()
 
+        errors = []
+
         if not name:
-
-            st.error(
-                "Please enter a name."
-            )
-
-        elif phone and not phone.isdigit():
-
-            st.error(
-                "Phone number must contain numbers only."
-            )
-        elif not seller:
-            st.error(
-                "Please enter a seller name"
-            )
-
-        elif phone and len(phone) != 10:
-
-            st.error(
-                "Phone number must be 10 digits."
-            )
-
-        elif not ticket:
-
-            st.error(
-                "Please enter a ticket number."
-            )
-
+            errors.append("• Please enter the ticket holder's name")
+        
+        if not seller:
+            errors.append("• Please enter your name (seller)")
+        
+        if not ticket:
+            errors.append("• Please enter the ticket number")
+        
+        if phone:
+            if not phone.isdigit():
+                errors.append("• Phone number must contain only digits")
+            elif len(phone) != 10:
+                errors.append("• Phone number must be exactly 10 digits")
+        
+        if errors:
+            st.error("**Please fix the following errors:**\n\n" + "\n".join(errors))
         else:
-
-            if not ticket.upper().startswith("T"):
-                ticket = f"T{ticket}"
-
             existing_phones = get_phone_numbers()
 
             phone_check = phone
 
             if phone_check and phone_check in existing_phones:
-
-                st.error(
-                    f"{phone} already exists."
-                )
-
+                st.error(f"⚠️ This phone number ({phone}) is already registered")
             else:
+                if not ticket.upper().startswith("T"):
+                    ticket = f"T{ticket}"
 
                 # Register new sellers before saving their ticket entry.
                 ensure_seller_user(seller)
@@ -431,12 +434,11 @@ with tab1:
                 st.session_state.reset_form = True
                 st.session_state.show_success = True
                 
-                
                 st.rerun()
 
     if st.session_state.seller_pin_ok:
         st.markdown("---")
-        st.subheader("View tickets by seller")
+        st.subheader("📋 Your Submitted Tickets")
 
         seller_names_by_key = {}
         for row in records:
@@ -454,29 +456,41 @@ with tab1:
 
         if seller_names:
             selected_seller = st.selectbox(
-                "Select a seller",
+                "Select a seller to view their tickets",
                 seller_names,
                 key="entered_tickets_seller"
             )
 
             ticket_rows = [
                 {
-                    "Ticket Number": str(row.get("Ticket Number", "")).strip(),
-                    "Name on Ticket": str(row.get("Name", "")).strip()
+                    "🎟 Ticket #": str(row.get("Ticket Number", "")).strip(),
+                    "Name": str(row.get("Name", "")).strip(),
+                    "💳 Status": str(row.get("Paid", "")).strip(),
+                    "📞": str(row.get("Phone", "")).strip(),
                 }
                 for row in records
                 if str(row.get("Seller Name", "")).strip().casefold()
                 == selected_seller.casefold()
             ]
 
-            st.dataframe(
-                pd.DataFrame(ticket_rows),
-                hide_index=True,
-                width="stretch",
-                alt="Ticket numbers and ticket holder names entered by the selected seller"
-            )
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                st.info(f"**{len(ticket_rows)} tickets** entered by {selected_seller}")
+            
+            if ticket_rows:
+                st.dataframe(
+                    pd.DataFrame(ticket_rows),
+                    hide_index=True,
+                    use_container_width=True,
+                    column_config={
+                        "💳 Status": st.column_config.TextColumn(width="small"),
+                        "📞": st.column_config.TextColumn(width="small"),
+                    }
+                )
+            else:
+                st.info("No tickets found for this seller.")
         else:
-            st.info("No seller entries yet.")
+            st.info("ℹ️ No seller entries yet. Submit your first ticket entry above!")
 
 # --------------------------------------------------
 # LAST YEAR'S SALES TAB
@@ -484,19 +498,15 @@ with tab1:
 
 with tab2:
 
-    st.subheader("Last Year's Tickets")
-
-# ----------------------------------------------
-# 1️⃣ SAVE TRANSACTION PIN (separate from Admin)
-# ----------------------------------------------
-# session_state as: Memory for this user's session
-# "not in" is checking whether something doesn't exist yet.
+    st.subheader("📋 Last Year's Tickets")
 
     if "save_pin_ok" not in st.session_state:
         st.session_state.save_pin_ok = False
 
     if not st.session_state.save_pin_ok:
 
+        st.info("👤 Enter your PIN to view last year's sales data")
+        
         with st.form("last_year_login"):
 
             save_pin = st.text_input(
@@ -506,7 +516,8 @@ with tab2:
             )
 
             pin_login = st.form_submit_button(
-                "Login"
+                "🔓 Login",
+                use_container_width=True
             )
 
         if pin_login:
@@ -515,22 +526,24 @@ with tab2:
                 st.session_state.save_pin_ok = True
                 st.rerun()
             else:
-                st.error("Incorrect PIN")
+                st.error("❌ Incorrect PIN")
 
     if st.session_state.save_pin_ok:
 
         col1, col2 = st.columns([6,1])
 
         with col1:
-            st.success("Access Granted")
+            st.success("✅ Access Granted")
 
         with col2:
             if st.button(
-                "Logout",
+                "🚪 Logout",
                 key="last_year_logout"
             ):
                 st.session_state.save_pin_ok = False
                 st.rerun()
+
+        st.markdown("---")
 
         records = get_last_year_records()
 
@@ -543,17 +556,22 @@ with tab2:
 
         seller = st.selectbox(
             "Select Seller",
-            seller_names
+            seller_names,
+            key="last_year_seller"
         )
 
         filtered_df = df[
             df["Seller"] == seller
         ]
 
-        st.metric(
-            "Tickets Last Year",
-            len(filtered_df)
-        )
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            st.metric(
+                "📊 Tickets Last Year",
+                len(filtered_df)
+            )
+        with col2:
+            st.markdown("<br>", unsafe_allow_html=True)
 
         st.dataframe(
             filtered_df,
@@ -566,39 +584,53 @@ with tab2:
 
 with tab3:
 
-    st.write("💳 Pay with Revolut")
+    st.subheader("💳 Payment Methods")
 
-    st.link_button(
-        "💳 Pay with Revolut",
-        st.secrets["REVOLUT_LINK"]
-    )
+    st.markdown("""
+Choose your preferred payment method below. All payments help support Ballymore GAA club activities.
+""")
 
     st.markdown("---")
 
-    col1, col2 = st.columns([1.2, 1])
+    col1, col2 = st.columns(2)
 
     with col1:
+        st.markdown("### 📱 Revolut Payment")
+        st.markdown("""
+Quick and easy payment through the Revolut app.
+        """)
+        st.link_button(
+            "💳 Pay with Revolut",
+            st.secrets["REVOLUT_LINK"],
+            use_container_width=True
+        )
+        
+        st.markdown("**Scan QR Code:**")
         st.image(
             "revolut_qr.png",
-            caption="Scan with Revolut App",
-            width=250
+            caption="Open Revolut and scan this code",
+            use_container_width=True
         )
 
     with col2:
-        st.markdown("*Bank Transfer Details (BOI)*")
-
-        st.markdown("**Club Name**")
-        st.write("BALLYMORE GAA")
-
-        st.markdown("**IBAN**")
-        st.code("IE71BOFI90177371264687")
-
-        st.markdown("**BIC**")
-        st.code("BOFIIE2DXXX ")
-
-        st.info(
-        "Please include your name as the payment reference."
-        )
+        st.markdown("### 🏦 Bank Transfer (BOI)")
+        st.markdown("""
+Bank of Ireland transfer. Please include your name as a reference.
+        """)
+        
+        st.markdown("**Bank Details:**")
+        
+        detail_col1, detail_col2 = st.columns([1, 2])
+        with detail_col1:
+            st.markdown("**Club Name**")
+            st.markdown("**IBAN**")
+            st.markdown("**BIC**")
+        with detail_col2:
+            st.code("BALLYMORE GAA")
+            st.code("IE71BOFI90177371264687")
+            st.code("BOFIIE2DXXX")
+        
+        st.info("✏️ **Reference:** Please include your name as the payment reference")
 
 # --------------------------------------------------
 # DASHBOARD
@@ -607,10 +639,15 @@ with tab4:
 
     st.subheader("📊 Sales Dashboard")
 
+    st.markdown("""
+Enter your PIN to view comprehensive sales analytics and performance metrics.
+""")
+
     save_pin = st.text_input(
         "Enter PIN to View Dashboard",
         type="password",
-        max_chars=4
+        max_chars=4,
+        key="dashboard_pin"
     )
 
     if save_pin == st.secrets["SAVE_PIN"]:
@@ -618,32 +655,19 @@ with tab4:
         records = get_records()
 
         if not records:
-            st.info("No data available.")
+            st.info("ℹ️ No data available yet.")
             st.stop()
 
         df = pd.DataFrame(records)
 
-        # -----------------------------
-        # Clean Data
-        # -----------------------------
+        st.markdown("---")
+        st.markdown("### 📈 Key Metrics")
 
-        if "Paid" in df.columns:
-
-            payment_counts = (
-                df["Paid"]
-                .fillna("Unknown")
-                .value_counts()
-            )
-
-        # -----------------------------
-        # KPI CARDS
-        # -----------------------------
-
-        col1, col2, col3 = st.columns(3)
+        col1, col2, col3, col4 = st.columns(4)
 
         with col1:
             st.metric(
-                "🎟 Total Tickets",
+                "🎟 Total Entries",
                 len(df)
             )
 
@@ -653,33 +677,37 @@ with tab4:
                 df["Seller Name"].nunique()
             )
 
+        paid_count = len(df[df["Paid"] != "Not Paid"]) if "Paid" in df.columns else 0
         with col3:
             st.metric(
-                "💳 Recorded Payments",
-                len(
-                    df[
-                        df["Paid"] != "Not Paid"
-                    ]
-                )
+                "✅ Paid Entries",
+                paid_count
+            )
+
+        pending_count = len(df[df["Paid"] == "Not Paid"]) if "Paid" in df.columns else 0
+        with col4:
+            st.metric(
+                "⏳ Pending Payment",
+                pending_count
             )
 
         st.markdown("---")
 
-        # -----------------------------
-        # TICKETS BY PAYMENT TYPE
-        # -----------------------------
-
-        st.subheader("💳 Payment Methods")
-
-        st.bar_chart(payment_counts)
+        # Payment breakdown
+        if "Paid" in df.columns:
+            payment_counts = (
+                df["Paid"]
+                .fillna("Unknown")
+                .value_counts()
+            )
+            
+            st.markdown("### 💳 Payment Methods Breakdown")
+            st.bar_chart(payment_counts)
 
         st.markdown("---")
 
-        # -----------------------------
-        # SELLER LEADERBOARD
-        # -----------------------------
-
-        st.subheader("🏆 Top Sellers")
+        # Seller leaderboard
+        st.markdown("### 🏆 Top Sellers")
 
         seller_counts = (
             df["Seller Name"]
@@ -689,10 +717,8 @@ with tab4:
 
         st.bar_chart(seller_counts.head(10))
 
-        st.markdown("---")
-
     elif save_pin != "":
-        st.error("Invalid PIN")
+        st.error("❌ Invalid PIN")
 
 # --------------------------------------------------
 # ADMIN VIEW
@@ -700,7 +726,7 @@ with tab4:
 with tab5:
 
     st.markdown("---")
-    st.subheader("Admin Access")
+    st.subheader("🔐 Admin Access")
 
     if "admin_pin_ok" not in st.session_state:
         st.session_state.admin_pin_ok = False
@@ -711,10 +737,9 @@ with tab5:
     if "admin_payment_update_message" not in st.session_state:
         st.session_state.admin_payment_update_message = ""
 
-    # -------------------------
-    # ADMIN LOGIN
-    # -------------------------
     if not st.session_state.admin_pin_ok:
+
+        st.info("👤 Administrator credentials required")
 
         with st.form("admin_login_form"):
 
@@ -724,7 +749,8 @@ with tab5:
             )
 
             admin_login = st.form_submit_button(
-                "Login"
+                "🔓 Login",
+                use_container_width=True
             )
 
         if admin_login:
@@ -733,28 +759,25 @@ with tab5:
                 st.session_state.admin_pin_ok = True
                 st.rerun()
             else:
-                st.error("Invalid PIN")
+                st.error("❌ Invalid PIN")
 
-    # -------------------------
-    # ADMIN AREA
-    # -------------------------
     if st.session_state.admin_pin_ok:
 
         col1, col2 = st.columns([6, 1])
 
         with col1:
-            st.success("ADMIN LOGGED IN")
+            st.success("✅ ADMIN LOGGED IN")
 
         with col2:
             if st.button(
-                "Logout",
+                "🚪 Logout",
                 key="admin_logout"
             ):
                 st.session_state.admin_pin_ok = False
                 st.rerun()
 
         st.markdown("---")
-        st.subheader("Manage user PINs")
+        st.subheader("👤 Manage Seller PINs")
 
         users = load_users()
         user_table = [
@@ -764,10 +787,15 @@ with tab5:
             }
             for user in users
         ]
-        st.dataframe(
-            pd.DataFrame(user_table, columns=["Username", "PIN"]),
-            hide_index=True
-        )
+        
+        if user_table:
+            st.dataframe(
+                pd.DataFrame(user_table, columns=["Username", "PIN"]),
+                hide_index=True,
+                use_container_width=True
+            )
+        else:
+            st.info("ℹ️ No users registered yet.")
 
         user_names = [
             user["Username"]
@@ -776,6 +804,9 @@ with tab5:
         ]
 
         if user_names:
+            st.markdown("---")
+            st.markdown("### 🔑 Set or Reset PIN")
+            
             with st.form("admin_user_pin_form"):
                 selected_user = st.selectbox(
                     "Select user",
@@ -786,9 +817,13 @@ with tab5:
                     type="password",
                     max_chars=4
                 ) or ""
-                update_user_pin = st.form_submit_button(
-                    "Save user PIN"
-                )
+                
+                col1, col2 = st.columns([1, 1])
+                with col1:
+                    update_user_pin = st.form_submit_button(
+                        "💾 Save PIN",
+                        use_container_width=True
+                    )
 
             if update_user_pin:
                 if selected_user not in user_names:
@@ -815,17 +850,19 @@ with tab5:
                         users_sheet.update_cell(user_row, 2, new_user_pin)
                         load_users.clear()
                         st.session_state.admin_update_message = (
-                            f"PIN updated for {selected_user}."
+                            f"✅ PIN updated for {selected_user}."
                         )
                         st.rerun()
         else:
-            st.info("No users are listed in the Users sheet.")
+            st.info("ℹ️ No users are listed in the Users sheet yet.")
 
         if st.session_state.admin_update_message:
             st.success(st.session_state.admin_update_message)
             st.session_state.admin_update_message = ""
 
         st.markdown("---")
+        st.subheader("📋 All Ticket Entries")
+
         records = get_records()
 
         display_records = list(reversed(records))
@@ -835,18 +872,19 @@ with tab5:
         for row in display_records:
             results.append(
                 {
-                    "Seller Name": row["Seller Name"],
-                    "Ticket Holder": row["Name"],
-                    "Ticket Number": row["Ticket Number"],
-                    "Paid": row["Paid"]
+                    "👤 Seller": row["Seller Name"],
+                    "🎟 Ticket #": row["Ticket Number"],
+                    "📝 Name": row["Name"],
+                    "💳 Status": row["Paid"]
                 }
             )
 
-        st.info(f"{len(results)} entries found.")
+        st.info(f"**Total:** {len(results)} entries found")
 
         st.dataframe(
             results,
-            use_container_width=True
+            use_container_width=True,
+            hide_index=True
         )
 
         st.markdown("---")
