@@ -279,7 +279,7 @@ with tab1:
     font-weight: 500;
     font-size: 0.95rem;
 ">
-    🔑 <strong>Enter your Seller PIN</strong> to begin entering tickets.
+    🔑 <strong>Enter Seller PIN</strong> to begin entering tickets.
 </div>
 """, unsafe_allow_html=True)
 # --------------------------------------------------
@@ -465,8 +465,6 @@ with tab1:
                 {
                     "🎟 Ticket #": str(row.get("Ticket Number", "")).strip(),
                     "Name": str(row.get("Name", "")).strip(),
-                    "💳 Status": str(row.get("Paid", "")).strip(),
-                    "📞": str(row.get("Phone", "")).strip(),
                 }
                 for row in records
                 if str(row.get("Seller Name", "")).strip().casefold()
@@ -481,11 +479,7 @@ with tab1:
                 st.dataframe(
                     pd.DataFrame(ticket_rows),
                     hide_index=True,
-                    use_container_width=True,
-                    column_config={
-                        "💳 Status": st.column_config.TextColumn(width="small"),
-                        "📞": st.column_config.TextColumn(width="small"),
-                    }
+                    use_container_width=True
                 )
             else:
                 st.info("No tickets found for this seller.")
@@ -505,7 +499,7 @@ with tab2:
 
     if not st.session_state.save_pin_ok:
 
-        st.info("👤 Enter your PIN to view last year's sales data")
+        st.info("👤 Enter seller PIN to view last year's sales data")
         
         with st.form("last_year_login"):
 
@@ -640,7 +634,7 @@ with tab4:
     st.subheader("📊 Sales Dashboard")
 
     st.markdown("""
-Enter your PIN to view comprehensive sales analytics and performance metrics.
+Enter seller PIN to view ticket sales and performance metrics.
 """)
 
     save_pin = st.text_input(
@@ -999,7 +993,7 @@ with tab5:
                 )
 
                 seller_pin = st.text_input(
-                    "Seller PIN",
+                    "Seller - Unique PIN",
                     type="password"
                 )
 
