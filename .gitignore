@@ -9,9 +9,11 @@ service_account.json
 # Python cache
 __pycache__/
 
+# Markdown files
+*.md
+
 # Virtual environments
 venv/
 .venv/
 venu/
 .idea/
-

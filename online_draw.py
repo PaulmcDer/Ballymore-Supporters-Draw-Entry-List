@@ -57,13 +57,13 @@ st.markdown(f"""
     <img src="data:image/png;base64,{logo}" alt="Ballymore GAA crest">
     <div>
         <h1>Support Ballymore GAA</h1>
-        <p>12 draws a year, 12 chances to win per entry..</p>
+        <p>One ticket enters you in all 12 monthly draws.</p>
     </div>
 </header>
 <section class="draw-offer">
-    <h3>Your entry for the year</h3>
+    <h3>Your annual entry</h3>
     <p><strong>€100 per ticket</strong> &nbsp;·&nbsp; Monthly prizes: €1,000, €100 and €100</p>
-    <p>Choose your tickets and holder names below. Payment is securely completed with Stripe.</p>
+    <p>Choose your tickets and holder names below. Secure payment is completed with Stripe.</p>
 </section>
 """, unsafe_allow_html=True)
 
@@ -405,7 +405,7 @@ with st.sidebar:
     <div class="draw-offer">
         <h3>About the draw</h3>
         <p>€100 per ticket</p>
-        <p>One ticket enters you in all 12 monthly draws for the year</p>
+        <p>Each ticket enters all 12 monthly draws for the year</p>
         <p>Monthly prizes: €1,000, €100 and €100</p>
     </div>
     """, unsafe_allow_html=True)
@@ -418,16 +418,21 @@ with st.sidebar:
 # --------------------------------------------------
 st.markdown(
     '<h2 class="draw-section-title">Choose your tickets</h2>'
-    '<p class="draw-section-caption">Select a quantity to see your total.</p>',
+    '<p class="draw-section-caption">Each ticket costs €100 and enters all 12 monthly draws.</p>',
     unsafe_allow_html=True
 )
 
 #--------------------------------------------------
 #Ticket Calculation
 #--------------------------------------------------
-quantity = st.selectbox(
-    "Number of Tickets",
-    [1, 2, 3, 4, 5]
+quantity = st.segmented_control(
+    "Number of tickets",
+    [1, 2, 3, 4, 5],
+    format_func=lambda count: str(count),
+    default=1,
+    required=True,
+    width="stretch",
+    wrap=True,
 )
 
 total_cost = quantity * 100
@@ -444,7 +449,7 @@ st.markdown(
 
 st.markdown("#### Ticket holder names")
 use_primary_name = st.checkbox(
-    "Use primary name for all tickets",
+    "Use purchaser name for every ticket",
     value=True
 )
 
@@ -458,15 +463,26 @@ with st.form(
 ):
     st.markdown("#### Your details")
     full_name = st.text_input(
-        "Full Name"
+        "Full name",
+        max_chars=80,
+        autocomplete="name",
+        placeholder="Enter your full name",
     )
 
     mobile = st.text_input(
-        "Mobile Number"
+        "Mobile number",
+        type="phone",
+        max_chars=32,
+        autocomplete="tel",
+        placeholder="For example, +353 87 123 4567",
     )
 
     email = st.text_input(
-    "Email Address"
+        "Email address",
+        type="email",
+        max_chars=254,
+        autocomplete="email",
+        placeholder="you@example.com",
     )
 
     ticket_names = []
@@ -480,7 +496,10 @@ with st.form(
         for i in range(quantity):
 
             ticket_name = st.text_input(
-                f"Name for Ticket {i+1}",
+                f"Name for ticket {i+1}",
+                max_chars=80,
+                autocomplete="name",
+                placeholder="Enter the ticket holder's name",
                 key=f"ticket_name_{i}"
             )
 
@@ -499,14 +518,17 @@ with st.form(
 
     with col2:
         with st.container(key="purchase-confirm"):
-            st.markdown("### Ready to enter?")
-            st.caption("Payment is securely processed by Stripe.")
+            st.markdown("### Secure checkout")
+            st.caption("Your payment is processed securely by Stripe.")
             accept_terms = st.checkbox(
-                "I confirm I wish to purchase these tickets"
+                "I confirm I want to purchase these tickets"
             )
 
             submit = st.form_submit_button(
-                "Continue to secure checkout"
+                "Continue to secure checkout",
+                type="primary",
+                icon=":material/lock:",
+                width="stretch",
             )
 # --------------------------------------------------
 # PLACEHOLDER PAYMENT LOGIC
@@ -547,18 +569,22 @@ if submit:
                     st.error(f"Please enter a name for Ticket {i+1}.")
                     st.stop()
 
-        st.success(
-        "Details accepted ✅")
+        full_name = full_name.strip()
+        mobile = mobile.strip()
+        email = email.strip()
+        ticket_names = [name.strip() for name in ticket_names]
 
-        st.markdown("### Payment Summary")
+        st.success("Your details are ready. Complete payment to confirm your entries.")
 
-        st.write(f"👤 {full_name}")
-        st.write(f"📱 {mobile}")
-        st.write(f"📧 {email}")
-        st.write(f"🎟️ {quantity} ticket(s)")
-        st.write(f"💰 Total Due: €{total_cost}")
+        st.markdown("### Payment summary")
 
-        st.markdown("---")
+        st.write(f"Name: {full_name}")
+        st.write(f"Mobile: {mobile}")
+        st.write(f"Email: {email}")
+        st.write(f"Tickets: {quantity}")
+        st.write(f"Total due: €{total_cost:,}")
+
+        st.caption("Ticket numbers are assigned after payment is confirmed.")
 
         st.session_state["buyer_name"] = full_name
         st.session_state["buyer_mobile"] = mobile
@@ -575,16 +601,15 @@ if submit:
         )
 
         st.link_button(
-            f"💳 Continue to Stripe (€{total_cost})",
-            checkout_url
+            f"Continue to secure payment · €{total_cost:,}",
+            checkout_url,
+            type="primary",
+            icon=":material/lock:",
+            width="stretch",
         )
 
 # --------------------------------------------------
 # FOOTER
 # --------------------------------------------------
 
-st.markdown("---")
-
-st.caption(
-    "Ballymore Supporters Draw Online"
-)
+st.caption("Ballymore Supporters Draw · Questions? [Contact us](mailto:ballymoredraw@gmail.com).")
