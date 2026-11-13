@@ -95,6 +95,28 @@ def get_last_year_records():
 def load_users():
     return users_sheet.get_all_records()
 
+def get_seller_names(users):
+    return sorted(
+        {
+            str(user.get("Username", "")).strip()
+            for user in users
+            if str(user.get("Username", "")).strip()
+        },
+        key=str.casefold
+    )
+
+def get_seller_pin(users, seller_name):
+    selected_user = next(
+        (
+            user
+            for user in users
+            if str(user.get("Username", "")).strip().casefold()
+            == seller_name.strip().casefold()
+        ),
+        None
+    )
+    return str(selected_user.get("PIN", "")).strip() if selected_user else ""
+
 # Add a new seller to the Users sheet once, with a blank PIN for an admin to set.
 def ensure_seller_user(new_seller_name):
     seller_key = new_seller_name.strip().casefold()
@@ -185,14 +207,14 @@ with st.sidebar:
 # Spilt for Tabs
 # --------------------------------------------------
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs(
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
     [
         "🎟 Ticket Entry",
         "📋 Last Year's Sales",
         "💳 Payment",
         "📊 Dashboard",
-        "🔐 Admin"
-        
+        "🔐 Admin",
+        "📥 Download CSV"
     ]
 )
 
@@ -975,14 +997,7 @@ with tab5:
     if not st.session_state.seller_logged_in:
         users = load_users()
         # Use the Users sheet as the source for seller names in the login dropdown.
-        seller_names = sorted(
-            {
-                str(user.get("Username", "")).strip()
-                for user in users
-                if str(user.get("Username", "")).strip()
-            },
-            key=str.casefold
-        )
+        seller_names = get_seller_names(users)
 
         if seller_names:
             with st.form("seller_login_form"):
@@ -1002,20 +1017,7 @@ with tab5:
                 )
 
             if seller_login:
-                selected_user = next(
-                    (
-                        user
-                        for user in users
-                        if str(user.get("Username", "")).strip().casefold()
-                        == seller_username.casefold()
-                    ),
-                    None
-                )
-                stored_pin = (
-                    str(selected_user.get("PIN", "")).strip()
-                    if selected_user
-                    else ""
-                )
+                stored_pin = get_seller_pin(users, seller_username)
 
                 # Sellers without an assigned PIN cannot log in until an admin sets one.
                 if stored_pin and stored_pin == seller_pin.strip():
@@ -1178,6 +1180,88 @@ with tab5:
             st.info(
                 "No entries found for this seller."
             )
+
+with tab6:
+
+    st.subheader("📥 Download Ticket Entries CSV")
+
+    if not st.session_state.seller_logged_in:
+        users = load_users()
+        seller_names = get_seller_names(users)
+
+        if seller_names:
+            with st.form("download_seller_login_form"):
+                download_seller = st.selectbox(
+                    "Seller Name",
+                    seller_names,
+                    key="download_seller_name"
+                )
+                download_pin = st.text_input(
+                    "Seller - Unique PIN",
+                    type="password",
+                    key="download_seller_pin"
+                )
+                download_login = st.form_submit_button("Seller Login")
+
+            if download_login:
+                stored_pin = get_seller_pin(users, download_seller)
+                if stored_pin and stored_pin == download_pin.strip():
+                    st.session_state.seller_logged_in = True
+                    st.session_state.seller_name = download_seller
+                    st.rerun()
+                elif not stored_pin:
+                    st.warning(
+                        "A PIN has not been assigned to this seller yet. Please contact an administrator."
+                    )
+                else:
+                    st.error("Invalid PIN")
+        else:
+            st.info("No sellers are registered yet.")
+
+    if st.session_state.seller_logged_in:
+        st.success(f"Logged in as {st.session_state.seller_name}")
+        if st.button("Logout", key="download_seller_logout"):
+            st.session_state.seller_logged_in = False
+            st.session_state.seller_name = ""
+            st.rerun()
+
+        st.caption(
+            "The download contains all ticket entries, name, ticket number and seller. "
+            "Data is cached for up to 60 seconds; refresh to get the latest entries."
+        )
+
+        if st.button("🔄 Refresh ticket entries", key="refresh_download_entries"):
+            get_records.clear()
+            st.rerun()
+
+        download_records = get_records()
+        if download_records:
+            download_rows = [
+                {
+                    "Name and Ticket Number": " ".join(
+                        part for part in (
+                            str(row["Name"]).strip(),
+                            str(row["Ticket Number"]).strip(),
+                        ) if part
+                    ),
+                    "Seller": str(row["Seller Name"]).strip(),
+                }
+                for row in download_records
+            ]
+            download_csv = pd.DataFrame(download_rows).to_csv(
+                index=False
+            ).encode("utf-8-sig")
+
+            st.download_button(
+                "📥 Download ticket entries CSV",
+                data=download_csv,
+                file_name="ticket_entries.csv",
+                mime="text/csv",
+                on_click="ignore",
+            )
+        else:
+            st.info("No ticket entries are available to download.")
+
 # --------------------------------------------------
 # FOOTER
 # --------------------------------------------------
