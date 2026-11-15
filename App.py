@@ -225,9 +225,6 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
 if "save_pin_ok" not in st.session_state:
     st.session_state.save_pin_ok = False
     
-if "seller_pin_ok" not in st.session_state:
-    st.session_state.seller_pin_ok = False
-    
 # --------------------------------------------------
 # PAGE
 # --------------------------------------------------
@@ -270,25 +267,28 @@ with tab1:
     # --------------------------------------------------
     st.markdown("---")
 
-    seller_pin = st.text_input(
-        "Seller PIN",
-        type="password",
-        max_chars=4,
-        key="seller_pin"
-    )
+    if not st.session_state.save_pin_ok:
+        with st.form("shared_login_form"):
+            seller_pin = st.text_input(
+                "Seller PIN",
+                type="password",
+                max_chars=4
+            )
+            pin_login = st.form_submit_button("🔓 Login")
 
-    if seller_pin == st.secrets["SAVE_PIN"]:
-        st.session_state.seller_pin_ok = True
-        st.success("PIN accepted")
-
-    elif seller_pin == "":
-        st.session_state.seller_pin_ok = False
-
+        if pin_login:
+            if seller_pin and seller_pin == st.secrets["SAVE_PIN"]:
+                st.session_state.save_pin_ok = True
+                st.rerun()
+            else:
+                st.error("Incorrect PIN")
     else:
-        st.session_state.seller_pin_ok = False
-        st.error("Incorrect PIN")
+        st.success("✅ Access granted")
+        if st.button("🚪 Logout", key="shared_logout"):
+            st.session_state.save_pin_ok = False
+            st.rerun()
 
-    if not st.session_state.seller_pin_ok:
+    if not st.session_state.save_pin_ok:
         
         st.markdown("""
 <div style="
@@ -377,7 +377,7 @@ with tab1:
         with col2:
             submit = st.form_submit_button(
                 "✅ Submit Entry",
-                disabled=not st.session_state.seller_pin_ok,
+                disabled=not st.session_state.save_pin_ok,
                 use_container_width=True
             )
 
@@ -395,7 +395,7 @@ with tab1:
 # --------------------------------------------------
 # st.session_state. is a variable that Streamlit remembers between reruns
 
-    if submit:
+    if submit and st.session_state.save_pin_ok:
 
         st.session_state.show_success = False
 
@@ -458,7 +458,7 @@ with tab1:
                 
                 st.rerun()
 
-    if st.session_state.seller_pin_ok:
+    if st.session_state.save_pin_ok:
         st.markdown("---")
         st.subheader("📋 Your Submitted Tickets")
 
@@ -516,48 +516,11 @@ with tab2:
 
     st.subheader("📋 Last Year's Tickets")
 
-    if "save_pin_ok" not in st.session_state:
-        st.session_state.save_pin_ok = False
-
     if not st.session_state.save_pin_ok:
-
-        st.info("👤 Enter seller PIN to view last year's sales data")
-        
-        with st.form("last_year_login"):
-
-            save_pin = st.text_input(
-                "Enter 4-digit PIN",
-                type="password",
-                max_chars=4
-            )
-
-            pin_login = st.form_submit_button(
-                "🔓 Login",
-                use_container_width=True
-            )
-
-        if pin_login:
-
-            if save_pin == st.secrets["SAVE_PIN"]:
-                st.session_state.save_pin_ok = True
-                st.rerun()
-            else:
-                st.error("❌ Incorrect PIN")
+        st.info("👤 Log in on the Ticket Entry tab to view last year's sales data")
 
     if st.session_state.save_pin_ok:
-
-        col1, col2 = st.columns([6,1])
-
-        with col1:
-            st.success("✅ Access Granted")
-
-        with col2:
-            if st.button(
-                "🚪 Logout",
-                key="last_year_logout"
-            ):
-                st.session_state.save_pin_ok = False
-                st.rerun()
+        st.success("✅ Access Granted")
 
         st.markdown("---")
 
@@ -655,18 +618,7 @@ with tab4:
 
     st.subheader("📊 Sales Dashboard")
 
-    st.markdown("""
-Enter seller PIN to view ticket sales and performance metrics.
-""")
-
-    save_pin = st.text_input(
-        "Enter PIN to View Dashboard",
-        type="password",
-        max_chars=4,
-        key="dashboard_pin"
-    )
-
-    if save_pin == st.secrets["SAVE_PIN"]:
+    if st.session_state.save_pin_ok:
 
         records = get_records()
 
@@ -733,8 +685,8 @@ Enter seller PIN to view ticket sales and performance metrics.
 
         st.bar_chart(seller_counts.head(10))
 
-    elif save_pin != "":
-        st.error("❌ Invalid PIN")
+    else:
+        st.info("👤 Log in on the Ticket Entry tab to view the dashboard.")
 
 # --------------------------------------------------
 # ADMIN VIEW
@@ -1183,7 +1135,7 @@ with tab5:
 
 with tab6:
 
-    st.subheader("📥 Download Ticket Entries CSV")
+    st.subheader("📥 Download Ticket Entries")
 
     if not st.session_state.seller_logged_in:
         users = load_users()
@@ -1226,8 +1178,8 @@ with tab6:
             st.rerun()
 
         st.caption(
-            "The download contains all ticket entries, name, ticket number and seller. "
-            "Data is cached for up to 60 seconds; refresh to get the latest entries."
+            "The download contains all ticket entries. The name, ticket number and seller. "
+            "Refresh to get the latest entries."
         )
 
         if st.button("🔄 Refresh ticket entries", key="refresh_download_entries"):
