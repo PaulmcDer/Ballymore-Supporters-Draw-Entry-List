@@ -14,7 +14,7 @@
 
 [data-testid="stMain"] > div {
     max-width: 54rem;
-    padding-top: 1.5rem;
+    padding-top: 3.75rem;
 }
 
 .st-key-entry-header {
@@ -100,7 +100,7 @@ div[data-testid="stForm"] button:hover,
 
 @media (max-width: 640px) {
     [data-testid="stMain"] > div {
-        padding: 0.85rem 0.75rem 0;
+        padding: 4.25rem 0.75rem 0;
     }
 
     .st-key-entry-header {
