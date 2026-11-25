@@ -17,7 +17,7 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-st.logo("logo.png")
+st.logo("logo.png", size="small")
 import base64
 
 def get_base64_logo():
@@ -176,7 +176,7 @@ with st.sidebar:
         st.image("logo.png", width=120)
 
     st.markdown(
-        "<h3 style='text-align:center;'>Ballymore GAA Draw Information</h3>",
+        "<h4 style='text-align:center;'>Ballymore GAA Draw Information</h4>",
         unsafe_allow_html=True
     )
 

@@ -280,32 +280,36 @@ a:hover {
 
     .app-header {
         gap: 0.75rem;
-        padding: 0.85rem 1rem;
-        margin-bottom: 1.5rem;
+        padding: 0.75rem 0.9rem;
+        margin-bottom: 1rem;
     }
 
     .app-header img {
-        width: 52px;
-        height: 52px;
+        width: 44px;
+        height: 44px;
     }
 
     .app-header h1 {
-        font-size: 1.3rem;
+        font-size: 1.15rem !important;
+        line-height: 1.2 !important;
     }
 
-    .stTabs [data-baseweb="tab"] {
-        min-height: 44px;
-        padding: 0.5rem 0.75rem !important;
-        font-size: 0.85rem !important;
+    .app-header p {
+        font-size: 0.8rem !important;
+        margin-top: 0.2rem;
     }
 
-    [data-testid="stForm"] {
-        padding: 1rem !important;
+    /* Scale down st.header (h2) and st.subheader (h3) on mobile */
+    [data-testid="stMain"] h2 {
+        font-size: 1.2rem !important;
+        margin-top: 1rem !important;
+        margin-bottom: 0.6rem !important;
     }
 
-    .stButton > button,
-    div[data-testid="stForm"] button {
-        min-height: 2.5rem;
-        padding: 0.65rem 1.25rem !important;
+    [data-testid="stMain"] h3 {
+        font-size: 1.05rem !important;
+        margin-top: 0.85rem !important;
+        margin-bottom: 0.5rem !important;
     }
 }
+
