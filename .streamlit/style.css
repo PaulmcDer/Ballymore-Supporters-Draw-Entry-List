@@ -25,7 +25,7 @@
 }
 
 [data-testid="stMain"] > div {
-    padding-top: 1.5rem;
+    padding-top: 3.75rem;
 }
 
 /* Branded page header */
@@ -275,7 +275,7 @@ a:hover {
 /* Responsive design */
 @media (max-width: 768px) {
     [data-testid="stMain"] > div {
-        padding: 1rem 0.75rem 0;
+        padding: 4.25rem 0.75rem 0;
     }
 
     .app-header {
